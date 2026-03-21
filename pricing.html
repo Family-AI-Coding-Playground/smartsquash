@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SmartSquash – Pricing</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Inter:wght@300;400;600;700&display=swap');
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root { --green:#00ff88; --dark:#080c14; --card:#0d1420; --border:rgba(0,255,136,.15); }
+    body { background: var(--dark); color: #e8f0fe; font-family: 'Inter', sans-serif; min-height: 100vh; }
+
+    nav {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 18px 48px;
+      background: rgba(8,12,20,.95);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-logo { display: flex; align-items: center; gap: 12px; text-decoration: none; }
+    .nav-logo span {
+      font-family: 'Orbitron', sans-serif; font-size: 1.4rem; font-weight: 900;
+      background: linear-gradient(90deg,#00ff88,#00c8ff);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      letter-spacing: 2px;
+    }
+    .nav-right { display: flex; align-items: center; gap: 16px; }
+    .nav-link {
+      font-family: 'Orbitron', sans-serif; font-size: .75rem; letter-spacing: 1.5px; font-weight: 700;
+      color: #00ff88; text-decoration: none; padding: 10px 20px; border-radius: 50px;
+      border: 1px solid rgba(0,255,136,.35); transition: background .2s, box-shadow .2s;
+    }
+    .nav-link:hover { background: rgba(0,255,136,.12); box-shadow: 0 0 18px rgba(0,255,136,.3); }
+    .download-btn {
+      display: inline-flex; align-items: center; gap: 10px;
+      background: linear-gradient(135deg,#00ff88,#00c8ff);
+      color: #080c14; font-family: 'Orbitron', sans-serif;
+      font-weight: 700; font-size: .78rem; letter-spacing: 1.5px;
+      padding: 14px 28px; border-radius: 50px; text-decoration: none;
+      box-shadow: 0 0 30px rgba(0,255,136,.45);
+      transition: transform .2s, box-shadow .2s;
+    }
+    .download-btn:hover { transform: scale(1.06); box-shadow: 0 0 55px rgba(0,255,136,.75); }
+
+    .page {
+      min-height: calc(100vh - 80px);
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      padding: 80px 24px; position: relative; overflow: hidden;
+    }
+    .page::before {
+      content: ''; position: absolute; inset: 0;
+      background: radial-gradient(ellipse at 30% 40%, rgba(0,255,136,.07) 0%, transparent 60%),
+                  radial-gradient(ellipse at 80% 70%, rgba(0,200,255,.07) 0%, transparent 60%);
+      pointer-events: none;
+    }
+
+    .page-badge {
+      font-family: 'Orbitron', sans-serif; font-size: .7rem; letter-spacing: 2px;
+      color: #00ff88; border: 1px solid rgba(0,255,136,.35);
+      padding: 6px 18px; border-radius: 50px; margin-bottom: 20px;
+    }
+    h1 {
+      font-family: 'Orbitron', sans-serif;
+      font-size: clamp(2rem, 5vw, 3.4rem); font-weight: 900;
+      background: linear-gradient(90deg,#00ff88,#00c8ff);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      margin-bottom: 16px; text-align: center;
+    }
+    .sub {
+      color: #8a9ab5; font-size: 1rem; margin-bottom: 64px; text-align: center; max-width: 520px; line-height: 1.7;
+    }
+
+    .pricing-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 28px; max-width: 900px; width: 100%;
+      position: relative; z-index: 1;
+    }
+
+    .price-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 24px; padding: 44px 32px;
+      text-align: center;
+      transition: transform .25s, box-shadow .25s;
+      position: relative; overflow: hidden;
+    }
+    .price-card:hover { transform: translateY(-10px); box-shadow: 0 20px 60px rgba(0,255,136,.18); }
+    .price-card.featured {
+      border-color: rgba(0,200,255,.5);
+      box-shadow: 0 0 40px rgba(0,200,255,.2);
+    }
+    .price-card.featured::before {
+      content: 'BEST VALUE';
+      position: absolute; top: 18px; right: -28px;
+      background: linear-gradient(90deg,#00c8ff,#7b2fff);
+      color: #fff; font-family: 'Orbitron', sans-serif;
+      font-size: .55rem; letter-spacing: 2px; font-weight: 700;
+      padding: 5px 42px; transform: rotate(45deg);
+    }
+
+    .price-icon { font-size: 2.4rem; margin-bottom: 20px; }
+    .price-label {
+      font-family: 'Orbitron', sans-serif; font-size: .75rem; letter-spacing: 2px;
+      color: #8a9ab5; margin-bottom: 16px;
+    }
+    .price-amount {
+      font-family: 'Orbitron', sans-serif; font-size: 3rem; font-weight: 900;
+      background: linear-gradient(135deg,#00ff88,#00c8ff);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      line-height: 1; margin-bottom: 8px;
+    }
+    .price-unit { font-size: .85rem; color: #556; margin-bottom: 24px; }
+    .price-desc { font-size: .92rem; color: #8a9ab5; line-height: 1.7; margin-bottom: 28px; }
+    .price-btn {
+      display: inline-block; width: 100%;
+      background: linear-gradient(135deg,#00ff88,#00c8ff);
+      color: #080c14; font-family: 'Orbitron', sans-serif;
+      font-weight: 700; font-size: .75rem; letter-spacing: 1.5px;
+      padding: 14px; border-radius: 50px; text-decoration: none;
+      transition: transform .2s, box-shadow .2s;
+    }
+    .price-btn:hover { transform: scale(1.04); box-shadow: 0 0 30px rgba(0,255,136,.5); }
+    .price-btn.alt {
+      background: transparent;
+      border: 1px solid rgba(0,255,136,.4);
+      color: #00ff88;
+    }
+    .price-btn.alt:hover { background: rgba(0,255,136,.1); }
+
+    .savings-note {
+      margin-top: 48px; text-align: center; color: #556; font-size: .85rem;
+      position: relative; z-index: 1;
+    }
+    .savings-note span { color: #00ff88; }
+  </style>
+</head>
+<body>
+  <nav>
+    <a class="nav-logo" href="index.html">
+      <svg width="36" height="36" viewBox="0 0 100 100">
+        <defs><radialGradient id="bg-mini" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#1a2a1a"/><stop offset="100%" stop-color="#080c14"/></radialGradient></defs>
+        <circle cx="50" cy="50" r="48" fill="url(#bg-mini)" stroke="#00ff8844" stroke-width="1"/>
+        <ellipse cx="42" cy="38" rx="22" ry="26" fill="none" stroke="#00ff88" stroke-width="4" transform="rotate(-30,42,38)"/>
+        <line x1="30" y1="30" x2="54" y2="46" stroke="#00ff8866" stroke-width="1.5"/>
+        <line x1="33" y1="24" x2="51" y2="53" stroke="#00ff8866" stroke-width="1.5"/>
+        <line x1="21" y1="36" x2="58" y2="40" stroke="#00ff8866" stroke-width="1.5"/>
+        <line x1="22" y1="42" x2="56" y2="47" stroke="#00ff8866" stroke-width="1.5"/>
+        <line x1="58" y1="55" x2="74" y2="78" stroke="#00c8ff" stroke-width="5" stroke-linecap="round"/>
+        <circle cx="76" cy="28" r="9" fill="#00ff88" opacity=".9"/>
+        <circle cx="76" cy="28" r="5" fill="#fff" opacity=".15"/>
+      </svg>
+      <span>SMARTSQUASH</span>
+    </a>
+    <div class="nav-right">
+      <a class="nav-link" href="pricing.html">Price</a>
+      <a class="nav-link" href="about.html">About Us</a>
+      <a class="nav-link" href="contact.html">Contact Info</a>
+      <a class="download-btn" href="index.html#download">&#9660; DOWNLOAD THE APP</a>
+    </div>
+  </nav>
+
+  <div class="page">
+    <div class="page-badge">PRICING</div>
+    <h1>SIMPLE, HONEST PRICING</h1>
+    <p class="sub">Pay only for what you play. No subscriptions, no hidden fees — just pure match analysis.</p>
+
+    <div class="pricing-grid">
+
+      <!-- Plan 1 -->
+      <div class="price-card">
+        <div class="price-icon">🎾</div>
+        <div class="price-label">SINGLE MATCH</div>
+        <div class="price-amount">$50</div>
+        <div class="price-unit">per match</div>
+        <div class="price-desc">
+          Perfect for trying SmartSquash out or analyzing a single important game.
+          Full AI shot analysis, speed tracking, and match report included.
+        </div>
+        <a class="price-btn alt" href="index.html#download">GET STARTED</a>
+      </div>
+
+      <!-- Plan 2 – featured (middle) -->
+      <div class="price-card featured">
+        <div class="price-icon">🏆</div>
+        <div class="price-label">40-MATCH SEASON</div>
+        <div class="price-amount">$1000</div>
+        <div class="price-unit">per 40 matches — $25/match</div>
+        <div class="price-desc">
+          Built for serious competitors and season-long training programs.
+          The best value — save $1,000 vs single-match rate across the full season.
+        </div>
+        <a class="price-btn" href="index.html#download">DOWNLOAD NOW</a>
+      </div>
+
+      <!-- Plan 3 -->
+      <div class="price-card">
+        <div class="price-icon">⚡</div>
+        <div class="price-label">5-MATCH PACK</div>
+        <div class="price-amount">$200</div>
+        <div class="price-unit">per 5 matches — $40/match</div>
+        <div class="price-desc">
+          Track your improvement across a full week of play.
+          Save $50 compared to single-match pricing.
+        </div>
+        <a class="price-btn alt" href="index.html#download">GET STARTED</a>
+      </div>
+
+    </div>
+
+    <p class="savings-note">All plans include full AI analysis, shot tracking, match reports &amp; progress history.<br/>Questions? <span><a href="contact.html" style="color:#00ff88;text-decoration:none;">Contact us</a></span> anytime.</p>
+  </div>
+</body>
+</html>

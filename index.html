@@ -1,0 +1,1430 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SmartSquash – AI-Powered Squash Analysis</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Inter:wght@300;400;600;700&display=swap');
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --green:  #00ff88;
+      --dark:   #080c14;
+      --card:   #0d1420;
+      --border: rgba(0,255,136,.15);
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--dark);
+      color: #e8f0fe;
+      font-family: 'Inter', sans-serif;
+      overflow-x: hidden;
+    }
+
+    /* ── NAV ── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 18px 48px;
+      background: rgba(8,12,20,.85);
+      backdrop-filter: blur(18px);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .nav-logo {
+      display: flex; align-items: center; gap: 12px;
+      text-decoration: none;
+    }
+
+    .nav-logo span {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 1.4rem; font-weight: 900;
+      background: linear-gradient(90deg,#00ff88,#00c8ff);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      letter-spacing: 2px;
+    }
+
+    .nav-right {
+      display: flex; align-items: center; gap: 16px;
+    }
+    .nav-link {
+      font-family: 'Orbitron', sans-serif;
+      font-size: .75rem; letter-spacing: 1.5px; font-weight: 700;
+      color: #00ff88; text-decoration: none;
+      padding: 10px 20px; border-radius: 50px;
+      border: 1px solid rgba(0,255,136,.35);
+      transition: background .2s, box-shadow .2s;
+    }
+    .nav-link:hover {
+      background: rgba(0,255,136,.12);
+      box-shadow: 0 0 18px rgba(0,255,136,.3);
+    }
+
+    .download-btn {
+      display: inline-flex; align-items: center; gap: 10px;
+      background: linear-gradient(135deg,#00ff88,#00c8ff);
+      color: #080c14; font-family: 'Orbitron', sans-serif;
+      font-weight: 700; font-size: .78rem; letter-spacing: 1.5px;
+      padding: 14px 28px; border-radius: 50px;
+      text-decoration: none; border: none; cursor: pointer;
+      box-shadow: 0 0 30px rgba(0,255,136,.45);
+      transition: transform .2s, box-shadow .2s;
+      animation: pulse-btn 2.5s ease-in-out infinite;
+    }
+    .download-btn:hover {
+      transform: scale(1.06);
+      box-shadow: 0 0 55px rgba(0,255,136,.75);
+    }
+    @keyframes pulse-btn {
+      0%,100% { box-shadow: 0 0 30px rgba(0,255,136,.45); }
+      50%      { box-shadow: 0 0 55px rgba(0,200,255,.7); }
+    }
+
+    /* ── CAROUSEL ── */
+    .carousel {
+      width: 100%; height: 340px;
+      position: relative; overflow: hidden;
+      margin-top: 74px; /* push below fixed nav */
+    }
+    .carousel-slide {
+      position: absolute; inset: 0;
+      opacity: 0; transition: opacity 1.2s ease;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .carousel-slide.active { opacity: 1; }
+    .carousel-slide svg { width: 100%; height: 340px; }
+
+    .carousel-dots {
+      position: absolute; bottom: 12px; left: 50%; transform: translateX(-50%);
+      display: flex; gap: 8px; z-index: 10;
+    }
+    .carousel-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: rgba(255,255,255,.25); transition: background .4s;
+    }
+    .carousel-dot.active { background: #00ff88; }
+
+    .slide-caption {
+      position: absolute; bottom: 36px; left: 50%; transform: translateX(-50%);
+      font-family: 'Orbitron', sans-serif; font-size: .7rem; letter-spacing: 2px;
+      color: rgba(255,255,255,.6); white-space: nowrap; z-index: 10;
+    }
+
+    /* ── HERO ── */
+    .hero {
+      min-height: 100vh;
+      display: flex; align-items: center; justify-content: center;
+      flex-direction: column; text-align: center;
+      padding: 120px 24px 80px;
+      position: relative; overflow: hidden;
+    }
+
+    /* abstract background blobs */
+    .hero::before, .hero::after {
+      content: ''; position: absolute; border-radius: 50%;
+      filter: blur(90px); pointer-events: none;
+    }
+    .hero::before {
+      width: 600px; height: 600px;
+      background: radial-gradient(circle,rgba(0,255,136,.18),transparent 70%);
+      top: -120px; left: -150px;
+    }
+    .hero::after {
+      width: 500px; height: 500px;
+      background: radial-gradient(circle,rgba(0,200,255,.18),transparent 70%);
+      bottom: -80px; right: -100px;
+    }
+
+    /* extra decorative orbs */
+    .orb {
+      position: absolute; border-radius: 50%;
+      filter: blur(70px); pointer-events: none; opacity: .55;
+    }
+    .orb1 { width:300px;height:300px; background:#7b2fff44; top:30%; right:5%; }
+    .orb2 { width:200px;height:200px; background:#ff448844; bottom:20%; left:10%; }
+
+    /* ── LOGO SVG ── */
+    .logo-wrap {
+      width: 220px; height: 220px;
+      margin-bottom: 40px;
+      position: relative; z-index: 1;
+      filter: drop-shadow(0 0 40px rgba(0,255,136,.5));
+      animation: float 4s ease-in-out infinite;
+    }
+    @keyframes float {
+      0%,100% { transform: translateY(0); }
+      50%      { transform: translateY(-14px); }
+    }
+
+    .hero h1 {
+      font-family: 'Orbitron', sans-serif;
+      font-size: clamp(2.8rem, 6vw, 5rem);
+      font-weight: 900; letter-spacing: 4px;
+      background: linear-gradient(90deg,#00ff88,#00c8ff,#7b2fff);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      margin-bottom: 20px; position: relative; z-index: 1;
+    }
+
+    .hero p.tagline {
+      font-size: clamp(1rem, 2vw, 1.3rem);
+      color: #9ab; max-width: 600px; line-height: 1.7;
+      margin-bottom: 48px; position: relative; z-index: 1;
+    }
+
+    /* ── EXAMPLE MATCH ── */
+    .example-match {
+      background: rgba(13,20,32,.9);
+      border: 1px solid rgba(0,255,136,.25);
+      border-radius: 20px;
+      padding: 28px 32px;
+      max-width: 520px; width: 100%;
+      margin-bottom: 36px;
+      position: relative; z-index: 1;
+      box-shadow: 0 0 40px rgba(0,255,136,.1);
+    }
+    .em-badge {
+      display: inline-block;
+      background: linear-gradient(90deg,#00ff88,#00c8ff);
+      color: #080c14; font-family: 'Orbitron', sans-serif;
+      font-size: .6rem; letter-spacing: 2px; font-weight: 700;
+      padding: 4px 14px; border-radius: 50px;
+      margin-bottom: 18px;
+      animation: pulse-btn 2s ease-in-out infinite;
+    }
+    .em-scoreboard {
+      display: flex; align-items: center; justify-content: center;
+      gap: 24px; margin-bottom: 22px;
+    }
+    .em-player { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+    .em-name { font-family: 'Orbitron', sans-serif; font-size: .65rem; letter-spacing: 2px; color: #8a9ab5; }
+    .em-score {
+      font-family: 'Orbitron', sans-serif; font-size: 2.8rem; font-weight: 900;
+      background: linear-gradient(135deg,#00ff88,#00c8ff);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      line-height: 1;
+    }
+    .em-divider {
+      font-family: 'Orbitron', sans-serif; font-size: .8rem;
+      color: #445; letter-spacing: 2px;
+    }
+    .em-stats {
+      display: grid; grid-template-columns: repeat(4,1fr);
+      gap: 12px; margin-bottom: 20px;
+    }
+    .em-stat { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+    .em-stat-val {
+      font-family: 'Orbitron', sans-serif; font-size: 1.2rem; font-weight: 700;
+      color: #00ff88;
+    }
+    .em-stat-label { font-size: .6rem; color: #556; letter-spacing: 1px; text-align: center; }
+    .em-shot-bar {
+      display: flex; align-items: center; gap: 10px;
+      margin-bottom: 8px;
+    }
+    .em-bar-label { font-size: .65rem; font-family: 'Orbitron', sans-serif; color: #8a9ab5; width: 52px; text-align: right; flex-shrink: 0; }
+    .em-bar-track { flex: 1; height: 6px; background: rgba(255,255,255,.06); border-radius: 4px; overflow: hidden; }
+    .em-bar-fill { height: 100%; border-radius: 4px; }
+    .em-bar-pct { font-size: .65rem; color: #556; width: 30px; flex-shrink: 0; }
+    .em-note { font-size: .7rem; color: #445; margin-top: 14px; text-align: center; }
+
+    .hero-reasoning {
+      max-width: 620px;
+      background: rgba(0,255,136,.06);
+      border: 1px solid rgba(0,255,136,.2);
+      border-radius: 16px;
+      padding: 22px 28px;
+      margin-bottom: 40px;
+      position: relative; z-index: 1;
+    }
+    .hero-reasoning p {
+      font-size: .95rem; color: #9ab; line-height: 1.8;
+      font-style: italic;
+    }
+
+    /* ── FEATURES ── */
+    section.features {
+      padding: 100px 24px;
+      max-width: 1100px; margin: 0 auto;
+    }
+
+    section.features h2 {
+      font-family: 'Orbitron', sans-serif;
+      font-size: clamp(1.6rem,3vw,2.4rem);
+      text-align: center; margin-bottom: 64px;
+      background: linear-gradient(90deg,#00ff88,#00c8ff);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 28px;
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 36px 28px;
+      transition: transform .25s, box-shadow .25s;
+    }
+    .card:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 12px 50px rgba(0,255,136,.15);
+    }
+
+    .card-icon {
+      font-size: 2.6rem; margin-bottom: 18px;
+    }
+
+    .card h3 {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 1rem; letter-spacing: 1.5px;
+      color: #00ff88; margin-bottom: 12px;
+    }
+
+    .card p {
+      font-size: .95rem; color: #8a9ab5; line-height: 1.7;
+    }
+
+    /* ── HOW IT WORKS ── */
+    section.how {
+      background: var(--card);
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      padding: 100px 24px;
+    }
+
+    .how-inner {
+      max-width: 1000px; margin: 0 auto;
+    }
+
+    section.how h2 {
+      font-family: 'Orbitron', sans-serif;
+      font-size: clamp(1.6rem,3vw,2.4rem);
+      text-align: center; margin-bottom: 64px;
+      background: linear-gradient(90deg,#00c8ff,#7b2fff);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+
+    .steps {
+      display: flex; flex-direction: column; gap: 36px;
+      position: relative;
+    }
+    .steps::before {
+      content: '';
+      position: absolute; left: 28px; top: 0; bottom: 0;
+      width: 2px;
+      background: linear-gradient(180deg,#00ff88,#00c8ff,#7b2fff);
+    }
+
+    .step {
+      display: flex; gap: 28px; align-items: flex-start;
+    }
+
+    .step-num {
+      flex-shrink: 0;
+      width: 56px; height: 56px; border-radius: 50%;
+      background: linear-gradient(135deg,#00ff88,#00c8ff);
+      color: #080c14; font-family: 'Orbitron', sans-serif;
+      font-weight: 900; font-size: 1.1rem;
+      display: flex; align-items: center; justify-content: center;
+      position: relative; z-index: 1;
+      box-shadow: 0 0 20px rgba(0,255,136,.5);
+    }
+
+    .step-body h3 {
+      font-family: 'Orbitron', sans-serif;
+      font-size: .95rem; letter-spacing: 1.2px;
+      color: #00c8ff; margin-bottom: 8px;
+    }
+    .step-body p { font-size: .95rem; color: #8a9ab5; line-height: 1.7; }
+
+    /* ── CTA BAND ── */
+    section.cta {
+      padding: 100px 24px;
+      text-align: center;
+      position: relative; overflow: hidden;
+    }
+    section.cta::before {
+      content: ''; position: absolute; inset: 0;
+      background: radial-gradient(ellipse at center,rgba(0,255,136,.08) 0%,transparent 70%);
+      pointer-events: none;
+    }
+    section.cta h2 {
+      font-family: 'Orbitron', sans-serif;
+      font-size: clamp(1.8rem,4vw,3rem);
+      margin-bottom: 20px;
+      background: linear-gradient(90deg,#00ff88,#00c8ff);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    section.cta p {
+      color: #9ab; font-size: 1.1rem; margin-bottom: 40px;
+    }
+
+    /* ── REASONING ── */
+    section.why {
+      padding: 100px 24px;
+      background: linear-gradient(180deg, var(--card) 0%, var(--dark) 100%);
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+    }
+    .why-inner { max-width: 1060px; margin: 0 auto; text-align: center; }
+    .why-badge {
+      display: inline-block;
+      background: linear-gradient(90deg,#00ff8822,#7b2fff22);
+      border: 1px solid #00ff8844;
+      color: #00ff88; font-family: 'Orbitron', sans-serif;
+      font-size: .7rem; letter-spacing: 2px;
+      padding: 6px 18px; border-radius: 50px;
+      margin-bottom: 20px;
+    }
+    section.why h2 {
+      font-family: 'Orbitron', sans-serif;
+      font-size: clamp(1.6rem,3vw,2.4rem);
+      margin-bottom: 24px;
+      background: linear-gradient(90deg,#00ff88,#7b2fff);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    .why-lead {
+      color: #9ab; font-size: 1.05rem; line-height: 1.8;
+      max-width: 740px; margin: 0 auto 60px;
+    }
+    .why-cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px,1fr));
+      gap: 28px; text-align: left;
+    }
+    .why-card {
+      background: var(--dark);
+      border: 1px solid var(--border);
+      border-radius: 20px; padding: 36px 28px;
+      transition: transform .25s, box-shadow .25s;
+    }
+    .why-card:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 12px 40px rgba(123,47,255,.2);
+    }
+    .why-num {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 2.2rem; font-weight: 900;
+      background: linear-gradient(135deg,#00ff88,#7b2fff);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      margin-bottom: 14px;
+    }
+    .why-card h3 {
+      font-family: 'Orbitron', sans-serif;
+      font-size: .9rem; letter-spacing: 1.5px;
+      color: #00c8ff; margin-bottom: 12px;
+    }
+    .why-card p { color: #8a9ab5; font-size: .95rem; line-height: 1.8; }
+
+    /* ── BENEFITS ── */
+    section.benefits {
+      padding: 100px 24px;
+      background: var(--dark);
+    }
+    .benefits-inner {
+      max-width: 1000px; margin: 0 auto;
+    }
+    section.benefits h2 {
+      font-family: 'Orbitron', sans-serif;
+      font-size: clamp(1.6rem,3vw,2.4rem);
+      text-align: center; margin-bottom: 16px;
+      background: linear-gradient(90deg,#00ff88,#7b2fff);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    .benefits-sub {
+      text-align: center; color: #8a9ab5; font-size: 1rem;
+      max-width: 680px; margin: 0 auto 72px; line-height: 1.7;
+    }
+    .benefit-row {
+      display: flex; align-items: flex-start; gap: 36px;
+      margin-bottom: 64px;
+    }
+    .benefit-row.reverse { flex-direction: row-reverse; }
+    .benefit-icon-wrap { flex-shrink: 0; }
+    .benefit-text h3 {
+      font-family: 'Orbitron', sans-serif;
+      font-size: .9rem; letter-spacing: 1.5px;
+      color: #00ff88; margin-bottom: 12px;
+    }
+    .benefit-text p {
+      color: #8a9ab5; font-size: .97rem; line-height: 1.85;
+    }
+    @media (max-width: 600px) {
+      .benefit-row, .benefit-row.reverse { flex-direction: column; }
+    }
+
+    /* ── APP STORES ── */
+    section.app-stores {
+      padding: 48px 24px;
+      background: var(--card);
+      border-top: 1px solid var(--border);
+      text-align: center;
+    }
+    .as-label {
+      font-family: 'Orbitron', sans-serif; font-size: .65rem;
+      letter-spacing: 3px; color: #445; margin-bottom: 20px;
+    }
+    .as-badges {
+      display: flex; align-items: center; justify-content: center;
+      gap: 20px; flex-wrap: wrap;
+    }
+    .as-badge {
+      display: flex; align-items: center; gap: 12px;
+      background: rgba(255,255,255,.05);
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: 14px; padding: 14px 24px;
+      text-decoration: none; color: #fff;
+      transition: background .2s, box-shadow .2s;
+    }
+    .as-badge:hover {
+      background: rgba(0,255,136,.08);
+      border-color: rgba(0,255,136,.3);
+      box-shadow: 0 0 24px rgba(0,255,136,.15);
+    }
+    .as-text { display: flex; flex-direction: column; text-align: left; }
+    .as-sub { font-size: .65rem; color: #8a9ab5; }
+    .as-main { font-family: 'Orbitron', sans-serif; font-size: .95rem; font-weight: 700; color: #fff; letter-spacing: 1px; }
+
+    /* ── FOOTER ── */
+    footer {
+      border-top: 1px solid var(--border);
+      text-align: center; padding: 32px 24px;
+      color: #445; font-size: .85rem;
+    }
+    footer span { color: #00ff88; }
+  </style>
+</head>
+<body>
+
+  <!-- ── NAV ── -->
+  <nav>
+    <a class="nav-logo" href="#">
+      <!-- inline mini logo -->
+      <svg width="36" height="36" viewBox="0 0 100 100">
+        <defs>
+          <radialGradient id="bg-mini" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stop-color="#1a2a1a"/>
+            <stop offset="100%" stop-color="#080c14"/>
+          </radialGradient>
+        </defs>
+        <circle cx="50" cy="50" r="48" fill="url(#bg-mini)" stroke="#00ff8844" stroke-width="1"/>
+        <!-- racket head oval -->
+        <ellipse cx="42" cy="38" rx="22" ry="26" fill="none" stroke="#00ff88" stroke-width="4" transform="rotate(-30,42,38)"/>
+        <!-- strings -->
+        <line x1="30" y1="30" x2="54" y2="46" stroke="#00ff8866" stroke-width="1.5"/>
+        <line x1="33" y1="24" x2="51" y2="53" stroke="#00ff8866" stroke-width="1.5"/>
+        <line x1="21" y1="36" x2="58" y2="40" stroke="#00ff8866" stroke-width="1.5"/>
+        <line x1="22" y1="42" x2="56" y2="47" stroke="#00ff8866" stroke-width="1.5"/>
+        <!-- handle -->
+        <line x1="58" y1="55" x2="74" y2="78" stroke="#00c8ff" stroke-width="5" stroke-linecap="round"/>
+        <!-- ball -->
+        <circle cx="76" cy="28" r="9" fill="#00ff88" opacity=".9"/>
+        <circle cx="76" cy="28" r="5" fill="#fff" opacity=".15"/>
+      </svg>
+      <span>SMARTSQUASH</span>
+    </a>
+
+    <div class="nav-right">
+      <a class="nav-link" href="pricing.html">Price</a>
+      <a class="nav-link" href="about.html">About Us</a>
+      <a class="nav-link" href="contact.html">Contact Info</a>
+      <a class="download-btn" href="#download">
+        &#9660; PRESS TO DOWNLOAD THE APP
+      </a>
+    </div>
+  </nav>
+
+  <!-- ── CAROUSEL ── -->
+  <div class="carousel" id="mainCarousel">
+
+    <!-- Slide 1: Real player photo – forehand lunge -->
+    <div class="carousel-slide active" style="background:#030810;display:flex;align-items:center;justify-content:center;">
+      <img src="player1.webp" style="max-height:340px;max-width:100%;width:auto;height:340px;object-fit:contain;opacity:.92;"/>
+      <div style="position:absolute;inset:0;background:linear-gradient(90deg,rgba(3,8,16,.7) 0%,transparent 40%,transparent 60%,rgba(3,8,16,.6) 100%);"></div>
+      <div style="position:absolute;top:14px;left:50%;transform:translateX(-50%);background:rgba(0,255,136,.08);border:1px solid rgba(0,255,136,.25);border-radius:17px;padding:8px 28px;">
+        <span style="font-family:'Orbitron',sans-serif;font-size:10px;color:#00ff88;letter-spacing:3px;">FOREHAND WINNER — GAME POINT</span>
+      </div>
+      <div style="position:absolute;right:60px;bottom:50px;background:rgba(0,0,0,.75);border:1px solid rgba(0,255,136,.25);border-radius:12px;padding:18px 28px;text-align:center;">
+        <div style="font-family:'Orbitron',sans-serif;font-size:9px;color:#00ff88;letter-spacing:2px;margin-bottom:8px;">SHOT ANALYSIS</div>
+        <div style="font-family:'Orbitron',sans-serif;font-size:20px;font-weight:900;color:#fff;margin-bottom:6px;">FOREHAND DRIVE</div>
+        <div style="font-family:'Orbitron',sans-serif;font-size:9px;color:#8a9ab5;letter-spacing:1px;">112 KM/H &nbsp;|&nbsp; ACCURACY 96%</div>
+      </div>
+    </div>
+
+    <!-- Slide 1 old SVG REMOVED -->
+    <div style="display:none;"><span></span></div>
+    <!-- KEEP SPACING -->
+    <div style="display:none;"><svg viewBox="0 0 1440 340" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
+        <defs>
+          <linearGradient id="s1bg" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#030810"/><stop offset="100%" stop-color="#061a10"/>
+          </linearGradient>
+          <radialGradient id="s1gl" cx="38%" cy="55%" r="45%">
+            <stop offset="0%" stop-color="#00ff8818"/><stop offset="100%" stop-color="transparent"/>
+          </radialGradient>
+          <!-- skin -->
+          <linearGradient id="skin1" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#c8845a"/><stop offset="100%" stop-color="#a0623c"/>
+          </linearGradient>
+          <linearGradient id="shoe1" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stop-color="#ffffff"/><stop offset="100%" stop-color="#cccccc"/>
+          </linearGradient>
+        </defs>
+        <rect width="1440" height="340" fill="url(#s1bg)"/>
+        <rect width="1440" height="340" fill="url(#s1gl)"/>
+        <!-- court floor -->
+        <rect x="0" y="288" width="1440" height="52" fill="#0a1a10" opacity=".8"/>
+        <line x1="0" y1="288" x2="1440" y2="288" stroke="#00ff8830" stroke-width="2"/>
+        <line x1="720" y1="288" x2="720" y2="340" stroke="#00ff8820" stroke-width="1.5"/>
+        <line x1="0" y1="200" x2="1440" y2="200" stroke="#00ff8810" stroke-width="1" stroke-dasharray="14,10"/>
+        <!-- PLAYER 1 – forehand lunge (detailed human) -->
+        <g transform="translate(370,28)">
+          <!-- left shoe -->
+          <ellipse cx="12" cy="268" rx="22" ry="8" fill="url(#shoe1)" opacity=".9"/>
+          <!-- right shoe lunging -->
+          <ellipse cx="118" cy="263" rx="26" ry="8" fill="url(#shoe1)" opacity=".9"/>
+          <!-- left leg -->
+          <path d="M38,210 Q22,240 12,262" fill="none" stroke="#1a5fcc" stroke-width="16" stroke-linecap="round"/>
+          <!-- knee left -->
+          <circle cx="24" cy="242" r="9" fill="#1a5fcc"/>
+          <!-- right leg lunge -->
+          <path d="M62,210 Q90,235 118,257" fill="none" stroke="#1a5fcc" stroke-width="16" stroke-linecap="round"/>
+          <!-- knee right -->
+          <circle cx="94" cy="237" r="9" fill="#1a5fcc"/>
+          <!-- shorts -->
+          <path d="M28,168 Q50,210 72,210 Q50,210 28,168Z" fill="#2266ee"/>
+          <path d="M28,168 L72,168 L85,210 L15,210Z" fill="#2266ee" rx="4"/>
+          <!-- torso / jersey -->
+          <path d="M20,100 Q15,140 18,168 L82,168 Q85,140 80,100 Q65,90 50,90 Q35,90 20,100Z" fill="#00cc55"/>
+          <!-- jersey number -->
+          <text x="50" y="145" text-anchor="middle" font-family="Arial" font-size="22" font-weight="900" fill="#fff" opacity=".8">7</text>
+          <!-- collar -->
+          <path d="M34,100 Q50,96 66,100" fill="none" stroke="#009944" stroke-width="3"/>
+          <!-- left arm back/non-racket -->
+          <path d="M22,108 Q5,130 2,148" fill="none" stroke="url(#skin1)" stroke-width="12" stroke-linecap="round"/>
+          <circle cx="2" cy="150" r="7" fill="url(#skin1)"/>
+          <!-- right arm swinging with racket -->
+          <path d="M78,108 Q115,90 138,72" fill="none" stroke="url(#skin1)" stroke-width="12" stroke-linecap="round"/>
+          <!-- elbow -->
+          <circle cx="114" cy="91" r="8" fill="url(#skin1)"/>
+          <!-- hand -->
+          <circle cx="140" cy="70" r="8" fill="url(#skin1)"/>
+          <!-- RACKET handle -->
+          <line x1="140" y1="70" x2="168" y2="48" stroke="#8B4513" stroke-width="7" stroke-linecap="round"/>
+          <!-- racket grip tape -->
+          <line x1="145" y1="66" x2="152" y2="60" stroke="#fff" stroke-width="2" stroke-linecap="round" opacity=".5"/>
+          <line x1="152" y1="59" x2="159" y2="53" stroke="#fff" stroke-width="2" stroke-linecap="round" opacity=".5"/>
+          <!-- racket frame -->
+          <ellipse cx="186" cy="32" rx="28" ry="34" fill="none" stroke="#e0e0e0" stroke-width="5" transform="rotate(-35,186,32)"/>
+          <!-- racket strings h -->
+          <line x1="163" y1="16" x2="209" y2="48" stroke="#e0e0e080" stroke-width="1.2"/>
+          <line x1="160" y1="24" x2="210" y2="40" stroke="#e0e0e080" stroke-width="1.2"/>
+          <line x1="162" y1="10" x2="205" y2="56" stroke="#e0e0e080" stroke-width="1.2"/>
+          <!-- racket strings v -->
+          <line x1="172" y1="8" x2="164" y2="56" stroke="#e0e0e060" stroke-width="1.2"/>
+          <line x1="183" y1="4" x2="178" y2="58" stroke="#e0e0e060" stroke-width="1.2"/>
+          <line x1="194" y1="7" x2="192" y2="56" stroke="#e0e0e060" stroke-width="1.2"/>
+          <!-- neck -->
+          <rect x="43" y="82" width="14" height="14" rx="5" fill="url(#skin1)"/>
+          <!-- HEAD -->
+          <ellipse cx="50" cy="65" rx="24" ry="27" fill="url(#skin1)"/>
+          <!-- hair -->
+          <path d="M26,55 Q30,30 50,28 Q70,30 74,55 Q68,40 50,38 Q32,40 26,55Z" fill="#1a0a00"/>
+          <!-- eye left -->
+          <ellipse cx="40" cy="62" rx="4" ry="3" fill="#fff"/>
+          <circle cx="41" cy="62" r="2" fill="#1a0a00"/>
+          <!-- eye right -->
+          <ellipse cx="60" cy="62" rx="4" ry="3" fill="#fff"/>
+          <circle cx="61" cy="62" r="2" fill="#1a0a00"/>
+          <!-- focused expression -->
+          <path d="M38,58 Q50,55 62,58" fill="none" stroke="#1a0a00" stroke-width="1.5"/>
+          <path d="M42,70 Q50,73 58,70" fill="none" stroke="#1a0a00" stroke-width="1.5"/>
+        </g>
+        <!-- BALL with impact burst -->
+        <circle cx="630" cy="82" r="14" fill="#00ff88"/>
+        <circle cx="630" cy="82" r="8" fill="#00dd66"/>
+        <circle cx="626" cy="78" r="4" fill="#fff" opacity=".3"/>
+        <line x1="643" y1="68" x2="660" y2="52" stroke="#00ff88" stroke-width="2.5" opacity=".7" stroke-linecap="round"/>
+        <line x1="647" y1="78" x2="668" y2="74" stroke="#00ff88" stroke-width="2" opacity=".6" stroke-linecap="round"/>
+        <line x1="642" y1="92" x2="660" y2="100" stroke="#00ff88" stroke-width="2" opacity=".5" stroke-linecap="round"/>
+        <!-- OPPONENT – right side defender -->
+        <g transform="translate(920,48)">
+          <ellipse cx="30" cy="255" rx="20" ry="7" fill="url(#shoe1)" opacity=".85"/>
+          <ellipse cx="76" cy="258" rx="20" ry="7" fill="url(#shoe1)" opacity=".85"/>
+          <path d="M30,200 Q28,228 30,250" fill="none" stroke="#cc3300" stroke-width="14" stroke-linecap="round"/>
+          <circle cx="29" cy="228" r="8" fill="#cc3300"/>
+          <path d="M60,200 Q65,228 76,253" fill="none" stroke="#cc3300" stroke-width="14" stroke-linecap="round"/>
+          <circle cx="65" cy="228" r="8" fill="#cc3300"/>
+          <path d="M20,160 L80,160 L72,200 L28,200Z" fill="#dd4400"/>
+          <path d="M18,96 Q14,130 20,160 L80,160 Q86,130 82,96 Q66,86 50,86 Q34,86 18,96Z" fill="#ff6622"/>
+          <text x="50" y="135" text-anchor="middle" font-family="Arial" font-size="20" font-weight="900" fill="#fff" opacity=".8">3</text>
+          <path d="M22,104 Q10,125 8,140" fill="none" stroke="#c8845a" stroke-width="11" stroke-linecap="round"/>
+          <!-- racket arm reaching back -->
+          <path d="M78,104 Q92,88 96,72" fill="none" stroke="#c8845a" stroke-width="11" stroke-linecap="round"/>
+          <circle cx="95" cy="73" r="7" fill="#c8845a"/>
+          <!-- racket ready position -->
+          <line x1="95" y1="73" x2="108" y2="55" stroke="#8B4513" stroke-width="6" stroke-linecap="round"/>
+          <ellipse cx="120" cy="42" rx="22" ry="27" fill="none" stroke="#ddd" stroke-width="4" transform="rotate(-20,120,42)"/>
+          <rect x="36" y="74" width="12" height="14" rx="4" fill="#c8845a"/>
+          <ellipse cx="50" cy="60" rx="22" ry="25" fill="#c8845a"/>
+          <path d="M28,50 Q32,28 50,26 Q68,28 72,50 Q66,36 50,34 Q34,36 28,50Z" fill="#0a0500"/>
+          <ellipse cx="41" cy="57" rx="3.5" ry="2.8" fill="#fff"/>
+          <circle cx="42" cy="57" r="1.8" fill="#0a0500"/>
+          <ellipse cx="59" cy="57" rx="3.5" ry="2.8" fill="#fff"/>
+          <circle cx="60" cy="57" r="1.8" fill="#0a0500"/>
+        </g>
+        <!-- AI overlay -->
+        <rect x="1080" y="180" width="310" height="80" rx="12" fill="rgba(0,0,0,.7)" stroke="rgba(0,255,136,.25)" stroke-width="1"/>
+        <text x="1235" y="206" text-anchor="middle" font-family="'Orbitron',sans-serif" font-size="9" fill="#00ff88" letter-spacing="2">SHOT ANALYSIS</text>
+        <text x="1235" y="228" text-anchor="middle" font-family="'Orbitron',sans-serif" font-size="18" font-weight="900" fill="#fff">FOREHAND DRIVE</text>
+        <text x="1235" y="248" text-anchor="middle" font-family="'Orbitron',sans-serif" font-size="9" fill="#8a9ab5" letter-spacing="1">112 KM/H  |  ACCURACY 96%</text>
+        <!-- label -->
+        <rect x="560" y="12" width="320" height="34" rx="17" fill="rgba(0,255,136,.08)" stroke="rgba(0,255,136,.25)" stroke-width="1"/>
+        <text x="720" y="34" text-anchor="middle" font-family="'Orbitron',sans-serif" font-size="10" fill="#00ff88" letter-spacing="3">FOREHAND WINNER — GAME POINT</text>
+      </svg>
+    </div>
+
+    <!-- Slide 2: Ali Farag trophy photo -->
+    <div class="carousel-slide" style="background:#080c14;display:flex;align-items:center;justify-content:center;">
+      <img src="player3.webp" style="max-height:340px;max-width:100%;width:auto;height:340px;object-fit:contain;"/>
+      <div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(8,12,20,.3) 0%,transparent 30%,transparent 70%,rgba(8,12,20,.5) 100%);pointer-events:none;"></div>
+      <div style="position:absolute;top:14px;left:50%;transform:translateX(-50%);background:rgba(255,215,0,.1);border:1px solid rgba(255,215,0,.35);border-radius:17px;padding:8px 28px;white-space:nowrap;">
+        <span style="font-family:'Orbitron',sans-serif;font-size:10px;color:#ffd700;letter-spacing:3px;">MATCH WIN — CHAMPIONSHIP MOMENT</span>
+      </div>
+      <div style="position:absolute;left:40px;bottom:40px;background:rgba(0,0,0,.75);border:1px solid rgba(255,215,0,.3);border-radius:12px;padding:16px 24px;text-align:center;">
+        <div style="font-family:'Orbitron',sans-serif;font-size:9px;color:#ffd700;letter-spacing:2px;margin-bottom:6px;">MATCH RESULT</div>
+        <div style="font-family:'Orbitron',sans-serif;font-size:28px;font-weight:900;color:#00ff88;margin-bottom:4px;">3 – 1</div>
+        <div style="font-family:'Orbitron',sans-serif;font-size:11px;color:#ffd700;">🏆 CHAMPION</div>
+      </div>
+    </div>
+    <!-- Slide 2 old SVG hidden -->
+    <div style="display:none;"><svg viewBox="0 0 1440 340" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
+        <defs>
+          <linearGradient id="s2bg" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#080c14"/><stop offset="100%" stop-color="#100820"/>
+          </linearGradient>
+          <radialGradient id="s2gl" cx="50%" cy="40%" r="50%">
+            <stop offset="0%" stop-color="#ffd70022"/><stop offset="100%" stop-color="transparent"/>
+          </radialGradient>
+          <linearGradient id="skin2" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stop-color="#d4956a"/><stop offset="100%" stop-color="#b5724a"/>
+          </linearGradient>
+        </defs>
+        <rect width="1440" height="340" fill="url(#s2bg)"/>
+        <rect width="1440" height="340" fill="url(#s2gl)"/>
+        <!-- spotlight glow -->
+        <ellipse cx="720" cy="340" rx="320" ry="120" fill="#ffd70015"/>
+        <ellipse cx="720" cy="340" rx="160" ry="60" fill="#ffd70015"/>
+        <!-- floor -->
+        <rect x="0" y="290" width="1440" height="50" fill="#080c14"/>
+        <line x1="0" y1="290" x2="1440" y2="290" stroke="#ffd70030" stroke-width="2"/>
+        <!-- confetti many pieces -->
+        <rect x="220" y="30" width="9" height="9" rx="2" fill="#00ff88" opacity=".8" transform="rotate(25,224,34)"/>
+        <rect x="380" y="15" width="7" height="7" rx="2" fill="#ffd700" opacity=".9" transform="rotate(50,383,18)"/>
+        <rect x="540" y="40" width="8" height="8" rx="2" fill="#00c8ff" opacity=".75" transform="rotate(15,544,44)"/>
+        <rect x="680" y="20" width="10" height="10" rx="2" fill="#ff4488" opacity=".7" transform="rotate(65,685,25)"/>
+        <rect x="820" y="35" width="7" height="7" rx="2" fill="#00ff88" opacity=".8" transform="rotate(40,823,38)"/>
+        <rect x="960" y="10" width="9" height="9" rx="2" fill="#ffd700" opacity=".85" transform="rotate(30,964,14)"/>
+        <rect x="1100" y="45" width="8" height="8" rx="2" fill="#7b2fff" opacity=".75" transform="rotate(55,1104,49)"/>
+        <rect x="1260" y="25" width="7" height="7" rx="2" fill="#ff4488" opacity=".7" transform="rotate(20,1263,28)"/>
+        <rect x="300" y="80" width="6" height="6" rx="1" fill="#00c8ff" opacity=".65" transform="rotate(45,303,83)"/>
+        <rect x="460" y="90" width="8" height="8" rx="2" fill="#ffd700" opacity=".7" transform="rotate(35,464,94)"/>
+        <rect x="900" y="75" width="7" height="7" rx="2" fill="#00ff88" opacity=".75" transform="rotate(60,903,78)"/>
+        <rect x="1150" y="85" width="9" height="9" rx="2" fill="#00c8ff" opacity=".65" transform="rotate(25,1154,89)"/>
+        <!-- WINNER PLAYER – arms raised, holding trophy -->
+        <g transform="translate(620,18)">
+          <!-- shoes -->
+          <ellipse cx="42" cy="275" rx="24" ry="8" fill="#fff" opacity=".9"/>
+          <ellipse cx="88" cy="275" rx="24" ry="8" fill="#fff" opacity=".9"/>
+          <!-- legs standing straight -->
+          <path d="M52,210 Q44,244 42,270" fill="none" stroke="#1a1a6e" stroke-width="16" stroke-linecap="round"/>
+          <circle cx="45" cy="244" r="9" fill="#1a1a6e"/>
+          <path d="M78,210 Q86,244 88,270" fill="none" stroke="#1a1a6e" stroke-width="16" stroke-linecap="round"/>
+          <circle cx="85" cy="244" r="9" fill="#1a1a6e"/>
+          <!-- shorts -->
+          <path d="M42,168 L88,168 L92,210 L38,210Z" fill="#2222aa"/>
+          <!-- jersey - celebration white -->
+          <path d="M36,98 Q30,136 34,168 L96,168 Q100,136 94,98 Q78,88 65,88 Q52,88 36,98Z" fill="#ffffff"/>
+          <!-- jersey stripes -->
+          <rect x="34" y="118" width="62" height="6" fill="#ffd700" opacity=".6" rx="2"/>
+          <rect x="34" y="138" width="62" height="6" fill="#ffd700" opacity=".6" rx="2"/>
+          <!-- left arm raised high -->
+          <path d="M36,106 Q18,80 8,50" fill="none" stroke="url(#skin2)" stroke-width="13" stroke-linecap="round"/>
+          <circle cx="8" cy="50" r="9" fill="url(#skin2)"/>
+          <!-- right arm raised with TROPHY -->
+          <path d="M94,106 Q112,80 124,52" fill="none" stroke="url(#skin2)" stroke-width="13" stroke-linecap="round"/>
+          <circle cx="124" cy="52" r="9" fill="url(#skin2)"/>
+          <!-- TROPHY -->
+          <g transform="translate(118,5)">
+            <rect x="4" y="26" width="20" height="4" rx="2" fill="#ffd700"/>
+            <rect x="0" y="30" width="28" height="4" rx="2" fill="#ffd700"/>
+            <rect x="6" y="10" width="16" height="18" rx="2" fill="#ffd700" stroke="#fff8" stroke-width="1"/>
+            <path d="M6,10 Q-4,6 -2,0 Q14,-4 30,0 Q32,6 22,10Z" fill="#ffd700" stroke="#fff6" stroke-width="1"/>
+            <path d="M6,6 Q0,10 6,14" fill="none" stroke="#ffd700" stroke-width="2.5"/>
+            <path d="M22,6 Q28,10 22,14" fill="none" stroke="#ffd700" stroke-width="2.5"/>
+            <circle cx="14" cy="5" r="3" fill="#fff" opacity=".4"/>
+          </g>
+          <!-- neck -->
+          <rect x="57" y="80" width="16" height="12" rx="5" fill="url(#skin2)"/>
+          <!-- HEAD -->
+          <ellipse cx="65" cy="62" rx="26" ry="28" fill="url(#skin2)"/>
+          <!-- hair dark -->
+          <path d="M39,54 Q44,28 65,26 Q86,28 91,54 Q84,38 65,36 Q46,38 39,54Z" fill="#0a0500"/>
+          <!-- BIG SMILE -->
+          <ellipse cx="56" cy="58" rx="4" ry="3.2" fill="#fff"/>
+          <circle cx="57" cy="58" r="2" fill="#0a0500"/>
+          <ellipse cx="74" cy="58" rx="4" ry="3.2" fill="#fff"/>
+          <circle cx="75" cy="58" r="2" fill="#0a0500"/>
+          <path d="M50,72 Q65,82 80,72" fill="none" stroke="#0a0500" stroke-width="2.5"/>
+          <!-- cheeks blush -->
+          <ellipse cx="46" cy="68" rx="7" ry="5" fill="#ff9999" opacity=".35"/>
+          <ellipse cx="84" cy="68" rx="7" ry="5" fill="#ff9999" opacity=".35"/>
+          <!-- glow -->
+          <circle cx="65" cy="180" r="100" fill="rgba(255,215,0,.05)"/>
+        </g>
+        <!-- Score card -->
+        <rect x="60" y="90" width="280" height="160" rx="18" fill="rgba(10,8,20,.92)" stroke="rgba(255,215,0,.35)" stroke-width="1.5"/>
+        <text x="200" y="124" text-anchor="middle" font-family="'Orbitron',sans-serif" font-size="10" fill="#ffd700" letter-spacing="2">MATCH RESULT</text>
+        <line x1="80" y1="134" x2="320" y2="134" stroke="#ffd70030" stroke-width="1"/>
+        <text x="200" y="172" text-anchor="middle" font-family="'Orbitron',sans-serif" font-size="38" font-weight="900" fill="#00ff88">3 – 1</text>
+        <text x="200" y="200" text-anchor="middle" font-family="'Orbitron',sans-serif" font-size="10" fill="#8a9ab5" letter-spacing="2">GAMES</text>
+        <text x="200" y="232" text-anchor="middle" font-family="'Orbitron',sans-serif" font-size="13" font-weight="700" fill="#ffd700" letter-spacing="1">🏆 CHAMPION</text>
+        <!-- label -->
+        <rect x="560" y="12" width="320" height="34" rx="17" fill="rgba(255,215,0,.1)" stroke="rgba(255,215,0,.3)" stroke-width="1"/>
+        <text x="720" y="34" text-anchor="middle" font-family="'Orbitron',sans-serif" font-size="10" fill="#ffd700" letter-spacing="3">MATCH WIN — CHAMPIONSHIP MOMENT</text>
+      </svg>
+    </div></div>
+
+    <!-- Slide 3: Real player photo – backhand rally -->
+    <div class="carousel-slide" style="background:#04080f;display:flex;align-items:center;justify-content:center;">
+      <img src="player2.webp" style="max-height:340px;max-width:100%;width:auto;height:340px;object-fit:contain;opacity:.92;"/>
+      <div style="position:absolute;inset:0;background:linear-gradient(90deg,rgba(4,8,15,.65) 0%,transparent 35%,transparent 65%,rgba(4,8,15,.6) 100%);"></div>
+      <div style="position:absolute;top:14px;left:50%;transform:translateX(-50%);background:rgba(0,200,255,.08);border:1px solid rgba(0,200,255,.25);border-radius:17px;padding:8px 28px;white-space:nowrap;">
+        <span style="font-family:'Orbitron',sans-serif;font-size:10px;color:#00c8ff;letter-spacing:3px;">INTENSE RALLY — AI LIVE ANALYSIS</span>
+      </div>
+      <div style="position:absolute;left:60px;bottom:50px;background:rgba(0,0,0,.75);border:1px solid rgba(0,200,255,.25);border-radius:12px;padding:18px 28px;text-align:center;">
+        <div style="font-family:'Orbitron',sans-serif;font-size:9px;color:#00c8ff;letter-spacing:2px;margin-bottom:8px;">SMARTSQUASH AI LIVE</div>
+        <div style="font-family:'Orbitron',sans-serif;font-size:20px;font-weight:900;color:#fff;margin-bottom:6px;">BACKHAND DRIVE</div>
+        <div style="font-family:'Orbitron',sans-serif;font-size:9px;color:#8a9ab5;letter-spacing:1px;">RALLY: 14 SHOTS &nbsp;|&nbsp; 93 KM/H</div>
+      </div>
+    </div>
+    <!-- Slide 3 old SVG (hidden) -->
+    <div style="display:none;"><svg viewBox="0 0 1440 340" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
+        <defs>
+          <linearGradient id="s3bg" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#04080f"/><stop offset="100%" stop-color="#06101a"/>
+          </linearGradient>
+          <radialGradient id="s3gl" cx="50%" cy="60%" r="55%">
+            <stop offset="0%" stop-color="#00c8ff12"/><stop offset="100%" stop-color="transparent"/>
+          </radialGradient>
+          <linearGradient id="skinA" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stop-color="#c8845a"/><stop offset="100%" stop-color="#a0623c"/>
+          </linearGradient>
+          <linearGradient id="skinB" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stop-color="#e8b48a"/><stop offset="100%" stop-color="#c8905a"/>
+          </linearGradient>
+        </defs>
+        <rect width="1440" height="340" fill="url(#s3bg)"/>
+        <rect width="1440" height="340" fill="url(#s3gl)"/>
+        <!-- court perspective -->
+        <polygon points="160,310 1280,310 1000,155 440,155" fill="#050e14" opacity=".6"/>
+        <line x1="160" y1="310" x2="440" y2="155" stroke="#00c8ff25" stroke-width="1.5"/>
+        <line x1="1280" y1="310" x2="1000" y2="155" stroke="#00c8ff25" stroke-width="1.5"/>
+        <line x1="440" y1="155" x2="1000" y2="155" stroke="#00c8ff25" stroke-width="1.5"/>
+        <line x1="160" y1="310" x2="1280" y2="310" stroke="#00c8ff30" stroke-width="2"/>
+        <line x1="720" y1="310" x2="720" y2="155" stroke="#00c8ff15" stroke-width="1" stroke-dasharray="8,6"/>
+        <!-- floor -->
+        <rect x="0" y="310" width="1440" height="30" fill="#030a10"/>
+        <!-- PLAYER LEFT – backhand cross -->
+        <g transform="translate(200,38)">
+          <ellipse cx="28" cy="272" rx="22" ry="7" fill="#fff" opacity=".85"/>
+          <ellipse cx="82" cy="268" rx="24" ry="7" fill="#fff" opacity=".85"/>
+          <!-- legs wide stance -->
+          <path d="M42,205 Q30,238 28,268" fill="none" stroke="#004488" stroke-width="15" stroke-linecap="round"/>
+          <circle cx="31" cy="238" r="8" fill="#004488"/>
+          <path d="M68,205 Q78,234 82,264" fill="none" stroke="#004488" stroke-width="15" stroke-linecap="round"/>
+          <circle cx="77" cy="234" r="8" fill="#004488"/>
+          <!-- shorts -->
+          <path d="M32,165 L78,165 L82,205 L28,205Z" fill="#0055aa"/>
+          <!-- jersey blue -->
+          <path d="M26,95 Q20,135 24,165 L86,165 Q90,135 84,95 Q68,85 55,85 Q42,85 26,95Z" fill="#0066cc"/>
+          <text x="55" y="140" text-anchor="middle" font-family="Arial" font-size="20" font-weight="900" fill="#fff" opacity=".85">1</text>
+          <!-- both arms forward – backhand -->
+          <path d="M28,105 Q60,88 100,72" fill="none" stroke="url(#skinA)" stroke-width="12" stroke-linecap="round"/>
+          <path d="M82,105 Q100,88 108,78" fill="none" stroke="url(#skinA)" stroke-width="12" stroke-linecap="round"/>
+          <circle cx="100" cy="73" r="8" fill="url(#skinA)"/>
+          <circle cx="108" cy="79" r="8" fill="url(#skinA)"/>
+          <!-- racket -->
+          <line x1="104" y1="76" x2="126" y2="52" stroke="#6B3410" stroke-width="6" stroke-linecap="round"/>
+          <ellipse cx="140" cy="38" rx="24" ry="30" fill="none" stroke="#ddd" stroke-width="4" transform="rotate(-20,140,38)"/>
+          <line x1="122" y1="20" x2="158" y2="56" stroke="#ddd8" stroke-width="1.2"/>
+          <line x1="118" y1="30" x2="160" y2="46" stroke="#ddd8" stroke-width="1.2"/>
+          <line x1="124" y1="14" x2="154" y2="62" stroke="#ddd8" stroke-width="1.2"/>
+          <line x1="132" y1="10" x2="148" y2="64" stroke="#ddd6" stroke-width="1.2"/>
+          <line x1="146" y1="8" x2="138" y2="66" stroke="#ddd6" stroke-width="1.2"/>
+          <!-- neck -->
+          <rect x="47" y="77" width="14" height="12" rx="5" fill="url(#skinA)"/>
+          <!-- head -->
+          <ellipse cx="55" cy="60" rx="24" ry="26" fill="url(#skinA)"/>
+          <path d="M31,52 Q36,28 55,26 Q74,28 79,52 Q72,38 55,36 Q38,38 31,52Z" fill="#1a0800"/>
+          <ellipse cx="46" cy="57" rx="3.5" ry="3" fill="#fff"/>
+          <circle cx="47" cy="57" r="1.8" fill="#1a0800"/>
+          <ellipse cx="64" cy="57" rx="3.5" ry="3" fill="#fff"/>
+          <circle cx="65" cy="57" r="1.8" fill="#1a0800"/>
+          <!-- intense focus mouth -->
+          <path d="M46,70 Q55,67 64,70" fill="none" stroke="#1a0800" stroke-width="1.8"/>
+        </g>
+        <!-- PLAYER RIGHT – forehand intercept -->
+        <g transform="translate(980,45)">
+          <ellipse cx="30" cy="265" rx="22" ry="7" fill="#fff" opacity=".85"/>
+          <ellipse cx="80" cy="268" rx="24" ry="7" fill="#fff" opacity=".85"/>
+          <path d="M40,200 Q28,234 30,262" fill="none" stroke="#550000" stroke-width="15" stroke-linecap="round"/>
+          <circle cx="31" cy="234" r="8" fill="#550000"/>
+          <path d="M66,200 Q76,232 80,265" fill="none" stroke="#550000" stroke-width="15" stroke-linecap="round"/>
+          <circle cx="75" cy="232" r="8" fill="#550000"/>
+          <path d="M28,162 L78,162 L80,200 L26,200Z" fill="#770000"/>
+          <path d="M22,92 Q16,132 20,162 L84,162 Q88,132 84,92 Q68,82 53,82 Q38,82 22,92Z" fill="#cc0000"/>
+          <text x="53" y="138" text-anchor="middle" font-family="Arial" font-size="20" font-weight="900" fill="#fff" opacity=".85">9</text>
+          <!-- racket arm swinging -->
+          <path d="M20,102 Q-10,86 -30,68" fill="none" stroke="url(#skinB)" stroke-width="12" stroke-linecap="round"/>
+          <circle cx="-30" cy="68" r="8" fill="url(#skinB)"/>
+          <path d="M84,100 Q96,118 104,132" fill="none" stroke="url(#skinB)" stroke-width="11" stroke-linecap="round"/>
+          <circle cx="104" cy="132" r="7" fill="url(#skinB)"/>
+          <!-- racket ready -->
+          <line x1="-30" y1="68" x2="-52" y2="46" stroke="#6B3410" stroke-width="6" stroke-linecap="round"/>
+          <ellipse cx="-66" cy="32" rx="24" ry="30" fill="none" stroke="#eee" stroke-width="4" transform="rotate(15,-66,32)"/>
+          <line x1="-88" y1="18" x2="-44" y2="46" stroke="#eee8" stroke-width="1.2"/>
+          <line x1="-90" y1="28" x2="-44" y2="38" stroke="#eee8" stroke-width="1.2"/>
+          <line x1="-84" y1="12" x2="-48" y2="52" stroke="#eee6" stroke-width="1.2"/>
+          <rect x="45" y="74" width="14" height="12" rx="5" fill="url(#skinB)"/>
+          <ellipse cx="53" cy="57" rx="24" ry="26" fill="url(#skinB)"/>
+          <path d="M29,49 Q34,26 53,24 Q72,26 77,49 Q70,36 53,34 Q36,36 29,49Z" fill="#2a1500"/>
+          <ellipse cx="44" cy="54" rx="3.5" ry="3" fill="#fff"/>
+          <circle cx="45" cy="54" r="1.8" fill="#2a1500"/>
+          <ellipse cx="62" cy="54" rx="3.5" ry="3" fill="#fff"/>
+          <circle cx="63" cy="54" r="1.8" fill="#2a1500"/>
+          <path d="M44,67 Q53,64 62,67" fill="none" stroke="#2a1500" stroke-width="1.8"/>
+        </g>
+        <!-- ball arc -->
+        <path d="M390,100 Q720,30 980,108" fill="none" stroke="#00ff88" stroke-width="3" stroke-dasharray="7,6" opacity=".55"/>
+        <circle cx="720" cy="42" r="13" fill="#00ff88"/>
+        <circle cx="720" cy="42" r="7" fill="#00cc66"/>
+        <circle cx="716" cy="38" r="4" fill="#fff" opacity=".3"/>
+        <!-- AI tracking box -->
+        <rect x="555" y="262" width="310" height="58" rx="10" fill="rgba(0,0,0,.72)" stroke="rgba(0,255,136,.25)" stroke-width="1"/>
+        <text x="710" y="286" text-anchor="middle" font-family="'Orbitron',sans-serif" font-size="9" fill="#00ff88" letter-spacing="2">SMARTSQUASH AI LIVE</text>
+        <text x="710" y="306" text-anchor="middle" font-family="'Orbitron',sans-serif" font-size="9" fill="#8a9ab5" letter-spacing="1">RALLY: 14 SHOTS  |  BALL SPEED: 93 KM/H</text>
+        <rect x="560" y="12" width="320" height="34" rx="17" fill="rgba(0,200,255,.08)" stroke="rgba(0,200,255,.25)" stroke-width="1"/>
+        <text x="720" y="34" text-anchor="middle" font-family="'Orbitron',sans-serif" font-size="10" fill="#00c8ff" letter-spacing="3">INTENSE RALLY — AI LIVE ANALYSIS</text>
+      </svg>
+    </div></div>
+
+    <!-- Slide 4: Paul Coll backhand photo -->
+    <div class="carousel-slide" style="background:#06080f;display:flex;align-items:center;justify-content:center;">
+      <img src="player4.webp" style="max-height:340px;max-width:100%;width:auto;height:340px;object-fit:contain;"/>
+      <div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(6,8,15,.3) 0%,transparent 30%,transparent 70%,rgba(6,8,15,.5) 100%);pointer-events:none;"></div>
+      <div style="position:absolute;top:14px;left:50%;transform:translateX(-50%);background:rgba(0,200,255,.08);border:1px solid rgba(0,200,255,.25);border-radius:17px;padding:8px 28px;white-space:nowrap;">
+        <span style="font-family:'Orbitron',sans-serif;font-size:10px;color:#00c8ff;letter-spacing:3px;">BACKHAND DRIVE — RALLY MODE</span>
+      </div>
+      <div style="position:absolute;right:40px;bottom:40px;background:rgba(0,0,0,.75);border:1px solid rgba(0,200,255,.25);border-radius:12px;padding:16px 24px;text-align:center;">
+        <div style="font-family:'Orbitron',sans-serif;font-size:9px;color:#00c8ff;letter-spacing:2px;margin-bottom:6px;">SHOT DETECTED</div>
+        <div style="font-family:'Orbitron',sans-serif;font-size:20px;font-weight:900;color:#fff;margin-bottom:4px;">BACKHAND</div>
+        <div style="font-family:'Orbitron',sans-serif;font-size:9px;color:#8a9ab5;letter-spacing:1px;">98 KM/H &nbsp;|&nbsp; ACCURACY 94%</div>
+      </div>
+    </div>
+    <!-- Slide 4 old SVG hidden -->
+    <div style="display:none;"><svg viewBox="0 0 1440 340" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
+        <defs>
+          <linearGradient id="s4bg" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#060410"/><stop offset="100%" stop-color="#0a0818"/>
+          </linearGradient>
+          <radialGradient id="s4gl" cx="55%" cy="55%" r="45%">
+            <stop offset="0%" stop-color="#7b2fff18"/><stop offset="100%" stop-color="transparent"/>
+          </radialGradient>
+          <linearGradient id="skin4" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stop-color="#d4a070"/><stop offset="100%" stop-color="#b07840"/>
+          </linearGradient>
+        </defs>
+        <rect width="1440" height="340" fill="url(#s4bg)"/>
+        <rect width="1440" height="340" fill="url(#s4gl)"/>
+        <!-- front wall -->
+        <rect x="0" y="0" width="1440" height="72" fill="rgba(123,47,255,.06)"/>
+        <line x1="0" y1="72" x2="1440" y2="72" stroke="#7b2fff35" stroke-width="2.5"/>
+        <line x1="0" y1="120" x2="1440" y2="120" stroke="#7b2fff20" stroke-width="1" stroke-dasharray="12,8"/>
+        <!-- floor -->
+        <rect x="0" y="295" width="1440" height="45" fill="#050310"/>
+        <line x1="0" y1="295" x2="1440" y2="295" stroke="#7b2fff30" stroke-width="1.5"/>
+        <!-- PLAYER – lunging drop shot (detailed) -->
+        <g transform="translate(530,25)">
+          <!-- back shoe -->
+          <ellipse cx="24" cy="274" rx="22" ry="8" fill="#fff" opacity=".9"/>
+          <!-- front shoe extended -->
+          <ellipse cx="142" cy="270" rx="26" ry="8" fill="#fff" opacity=".9"/>
+          <!-- back leg bent -->
+          <path d="M44,205 Q32,240 24,270" fill="none" stroke="#222288" stroke-width="16" stroke-linecap="round"/>
+          <circle cx="30" cy="240" r="9" fill="#222288"/>
+          <!-- front leg lunging far -->
+          <path d="M78,205 Q110,238 142,266" fill="none" stroke="#222288" stroke-width="16" stroke-linecap="round"/>
+          <circle cx="114" cy="238" r="9" fill="#222288"/>
+          <!-- shorts -->
+          <path d="M34,165 L88,165 L98,205 L24,205Z" fill="#3333aa"/>
+          <!-- jersey white with purple trim -->
+          <path d="M28,94 Q22,135 26,165 L90,165 Q94,135 88,94 Q72,84 59,84 Q46,84 28,94Z" fill="#eeeeff"/>
+          <!-- purple side stripes -->
+          <path d="M28,94 Q22,135 26,165 L36,165 L38,94Z" fill="#7b2fff" opacity=".7"/>
+          <path d="M88,94 Q94,135 90,165 L80,165 L78,94Z" fill="#7b2fff" opacity=".7"/>
+          <!-- jersey number -->
+          <text x="59" y="142" text-anchor="middle" font-family="Arial" font-size="22" font-weight="900" fill="#7b2fff" opacity=".9">5</text>
+          <!-- non-racket arm out for balance -->
+          <path d="M28,104 Q8,122 -8,138" fill="none" stroke="url(#skin4)" stroke-width="12" stroke-linecap="round"/>
+          <circle cx="-9" cy="139" r="8" fill="url(#skin4)"/>
+          <!-- racket arm reaching low/forward -->
+          <path d="M88,104 Q122,128 148,160" fill="none" stroke="url(#skin4)" stroke-width="12" stroke-linecap="round"/>
+          <circle cx="122" cy="127" r="8" fill="url(#skin4)"/>
+          <circle cx="148" cy="161" r="8" fill="url(#skin4)"/>
+          <!-- racket handle -->
+          <line x1="148" y1="161" x2="166" y2="186" stroke="#6B3410" stroke-width="7" stroke-linecap="round"/>
+          <!-- grip tape -->
+          <line x1="152" y1="167" x2="158" y2="175" stroke="#fff6" stroke-width="2" stroke-linecap="round"/>
+          <line x1="157" y1="174" x2="163" y2="182" stroke="#fff6" stroke-width="2" stroke-linecap="round"/>
+          <!-- racket frame drop shot angle -->
+          <ellipse cx="176" cy="202" rx="22" ry="26" fill="none" stroke="#e0e0e0" stroke-width="5" transform="rotate(25,176,202)"/>
+          <!-- strings -->
+          <line x1="157" y1="188" x2="195" y2="216" stroke="#e0e0e080" stroke-width="1.2"/>
+          <line x1="154" y1="196" x2="196" y2="208" stroke="#e0e0e080" stroke-width="1.2"/>
+          <line x1="160" y1="182" x2="194" y2="222" stroke="#e0e0e080" stroke-width="1.2"/>
+          <line x1="168" y1="178" x2="184" y2="226" stroke="#e0e0e070" stroke-width="1.2"/>
+          <line x1="178" y1="178" x2="172" y2="226" stroke="#e0e0e070" stroke-width="1.2"/>
+          <!-- ball near front wall – low bounce -->
+          <circle cx="210" cy="248" r="12" fill="#00ff88" opacity=".95"/>
+          <circle cx="210" cy="248" r="7" fill="#00dd66"/>
+          <circle cx="207" cy="244" r="4" fill="#fff" opacity=".3"/>
+          <!-- bounce shadow -->
+          <ellipse cx="210" cy="263" rx="18" ry="5" fill="#00ff88" opacity=".25"/>
+          <!-- ball trail -->
+          <path d="M220,160 Q218,200 210,248" fill="none" stroke="#00ff8840" stroke-width="2.5" stroke-dasharray="5,5"/>
+          <!-- neck -->
+          <rect x="51" y="76" width="14" height="13" rx="5" fill="url(#skin4)"/>
+          <!-- head leaning forward -->
+          <ellipse cx="56" cy="57" rx="25" ry="27" fill="url(#skin4)" transform="rotate(10,56,57)"/>
+          <!-- hair -->
+          <path d="M30,46 Q36,22 58,20 Q78,22 82,46 Q75,32 58,30 Q40,32 30,46Z" fill="#180800"/>
+          <ellipse cx="45" cy="52" rx="3.5" ry="3" fill="#fff"/>
+          <circle cx="46" cy="52" r="1.8" fill="#180800"/>
+          <ellipse cx="64" cy="52" rx="3.5" ry="3" fill="#fff"/>
+          <circle cx="65" cy="52" r="1.8" fill="#180800"/>
+          <!-- gritted teeth expression -->
+          <path d="M44,66 Q57,74 70,66" fill="#fff" opacity=".7"/>
+          <path d="M44,66 Q57,74 70,66" fill="none" stroke="#180800" stroke-width="1.5"/>
+        </g>
+        <!-- Stat overlay panel -->
+        <rect x="880" y="105" width="440" height="150" rx="16" fill="rgba(10,6,24,.9)" stroke="rgba(123,47,255,.35)" stroke-width="1.5"/>
+        <text x="1100" y="135" text-anchor="middle" font-family="'Orbitron',sans-serif" font-size="9" fill="#7b2fff" letter-spacing="2">SHOT DETECTED</text>
+        <line x1="900" y1="145" x2="1300" y2="145" stroke="#7b2fff30" stroke-width="1"/>
+        <text x="1100" y="176" text-anchor="middle" font-family="'Orbitron',sans-serif" font-size="26" font-weight="900" fill="#fff">DROP SHOT</text>
+        <text x="1100" y="204" text-anchor="middle" font-family="'Orbitron',sans-serif" font-size="10" fill="#8a9ab5" letter-spacing="1">ACCURACY 98%   |   SPEED 34 KM/H</text>
+        <rect x="1040" y="216" width="120" height="24" rx="12" fill="#00ff8820" stroke="#00ff8840" stroke-width="1"/>
+        <text x="1100" y="232" text-anchor="middle" font-family="'Orbitron',sans-serif" font-size="10" fill="#00ff88" letter-spacing="2">✓ WINNER</text>
+        <!-- label -->
+        <rect x="560" y="12" width="320" height="34" rx="17" fill="rgba(123,47,255,.1)" stroke="rgba(123,47,255,.3)" stroke-width="1"/>
+        <text x="720" y="34" text-anchor="middle" font-family="'Orbitron',sans-serif" font-size="10" fill="#7b2fff" letter-spacing="3">DROP SHOT WINNER — POINT TAKEN</text>
+      </svg>
+    </div></div>
+
+    <!-- dots -->
+    <div class="carousel-dots">
+      <div class="carousel-dot active"></div>
+      <div class="carousel-dot"></div>
+      <div class="carousel-dot"></div>
+      <div class="carousel-dot"></div>
+    </div>
+  </div>
+
+  <!-- ── HERO ── -->
+  <section class="hero">
+    <div class="orb orb1"></div>
+    <div class="orb orb2"></div>
+
+    <!-- EXAMPLE MATCH -->
+    <div class="example-match">
+      <div class="em-badge">LIVE EXAMPLE MATCH</div>
+      <div class="em-scoreboard">
+        <div class="em-player">
+          <span class="em-name">ALI FARAG</span>
+          <span class="em-score">3</span>
+        </div>
+        <div class="em-divider">VS</div>
+        <div class="em-player">
+          <span class="em-name">PAUL COLL</span>
+          <span class="em-score">2</span>
+        </div>
+      </div>
+      <div class="em-stats">
+        <div class="em-stat">
+          <span class="em-stat-val">87<span style="font-size:.7em">km/h</span></span>
+          <span class="em-stat-label">Avg Ball Speed</span>
+        </div>
+        <div class="em-stat">
+          <span class="em-stat-val">42</span>
+          <span class="em-stat-label">Total Shots</span>
+        </div>
+        <div class="em-stat">
+          <span class="em-stat-val">94<span style="font-size:.7em">%</span></span>
+          <span class="em-stat-label">Shot Accuracy</span>
+        </div>
+        <div class="em-stat">
+          <span class="em-stat-val">7</span>
+          <span class="em-stat-label">Rallies</span>
+        </div>
+      </div>
+      <div class="em-shot-bar">
+        <span class="em-bar-label">DRIVES</span>
+        <div class="em-bar-track"><div class="em-bar-fill" style="width:72%;background:linear-gradient(90deg,#00ff88,#00c8ff)"></div></div>
+        <span class="em-bar-pct">72%</span>
+      </div>
+      <div class="em-shot-bar">
+        <span class="em-bar-label">DROPS</span>
+        <div class="em-bar-track"><div class="em-bar-fill" style="width:18%;background:linear-gradient(90deg,#7b2fff,#00c8ff)"></div></div>
+        <span class="em-bar-pct">18%</span>
+      </div>
+      <div class="em-shot-bar">
+        <span class="em-bar-label">BOASTS</span>
+        <div class="em-bar-track"><div class="em-bar-fill" style="width:10%;background:linear-gradient(90deg,#ff4488,#7b2fff)"></div></div>
+        <span class="em-bar-pct">10%</span>
+      </div>
+      <p class="em-note">&#128337; Game 1 of 5 &nbsp;|&nbsp; SmartSquash AI Analysis</p>
+    </div>
+
+    <!-- LOGO SVG -->
+    <div class="logo-wrap">
+      <svg viewBox="0 0 220 220" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <!-- abstract gradient bg -->
+          <radialGradient id="bgGrad" cx="50%" cy="50%" r="50%">
+            <stop offset="0%"   stop-color="#0e1f12"/>
+            <stop offset="100%" stop-color="#060a10"/>
+          </radialGradient>
+          <!-- glow filter -->
+          <filter id="glow" x="-30%" y="-30%" width="160%" height="160%">
+            <feGaussianBlur stdDeviation="6" result="blur"/>
+            <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+          </filter>
+          <filter id="softglow" x="-20%" y="-20%" width="140%" height="140%">
+            <feGaussianBlur stdDeviation="3" result="blur"/>
+            <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+          </filter>
+          <linearGradient id="racketGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#00ff88"/>
+            <stop offset="100%" stop-color="#00c8ff"/>
+          </linearGradient>
+          <linearGradient id="handleGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#00c8ff"/>
+            <stop offset="100%" stop-color="#7b2fff"/>
+          </linearGradient>
+        </defs>
+
+        <!-- circle background -->
+        <circle cx="110" cy="110" r="108" fill="url(#bgGrad)" stroke="#00ff8830" stroke-width="1.5"/>
+
+        <!-- abstract blobs -->
+        <ellipse cx="60" cy="70" rx="55" ry="40" fill="#00ff8808" transform="rotate(-20,60,70)"/>
+        <ellipse cx="155" cy="150" rx="50" ry="35" fill="#00c8ff08" transform="rotate(15,155,150)"/>
+        <ellipse cx="90" cy="160" rx="45" ry="30" fill="#7b2fff0a" transform="rotate(-10,90,160)"/>
+
+        <!-- abstract lines (art feel) -->
+        <path d="M10,80 Q60,30 120,90 T200,70" stroke="#00ff8820" stroke-width="1.5" fill="none"/>
+        <path d="M20,150 Q80,100 130,160 T210,140" stroke="#00c8ff18" stroke-width="1.5" fill="none"/>
+        <path d="M30,190 Q100,130 170,180" stroke="#7b2fff18" stroke-width="1" fill="none"/>
+
+        <!-- RACKET HEAD (oval) rotated -35deg around its center ~(95,95) -->
+        <g transform="rotate(-35, 95, 92)" filter="url(#glow)">
+          <!-- outer frame -->
+          <ellipse cx="95" cy="92" rx="44" ry="52" fill="none" stroke="url(#racketGrad)" stroke-width="5"/>
+          <!-- inner strings horizontal -->
+          <line x1="56"  y1="82" x2="134" y2="82" stroke="#00ff8840" stroke-width="1.5"/>
+          <line x1="54"  y1="92" x2="136" y2="92" stroke="#00ff8840" stroke-width="1.5"/>
+          <line x1="56"  y1="102" x2="134" y2="102" stroke="#00ff8840" stroke-width="1.5"/>
+          <line x1="60"  y1="72" x2="130" y2="72" stroke="#00ff8840" stroke-width="1.5"/>
+          <line x1="62"  y1="112" x2="128" y2="112" stroke="#00ff8840" stroke-width="1.5"/>
+          <!-- inner strings vertical -->
+          <line x1="80"  y1="42" x2="80"  y2="142" stroke="#00c8ff40" stroke-width="1.5"/>
+          <line x1="95"  y1="40" x2="95"  y2="144" stroke="#00c8ff40" stroke-width="1.5"/>
+          <line x1="110" y1="42" x2="110" y2="142" stroke="#00c8ff40" stroke-width="1.5"/>
+          <line x1="65"  y1="55" x2="65"  y2="129" stroke="#00c8ff40" stroke-width="1.5"/>
+          <line x1="125" y1="55" x2="125" y2="129" stroke="#00c8ff40" stroke-width="1.5"/>
+          <!-- throat piece -->
+          <path d="M75,140 L85,158 L105,158 L115,140" fill="none" stroke="url(#racketGrad)" stroke-width="4" stroke-linejoin="round"/>
+        </g>
+
+        <!-- HANDLE -->
+        <line x1="112" y1="152" x2="155" y2="200" stroke="url(#handleGrad)" stroke-width="9" stroke-linecap="round" filter="url(#softglow)"/>
+        <!-- grip wrap detail -->
+        <line x1="117" y1="160" x2="123" y2="166" stroke="#ffffff30" stroke-width="2" stroke-linecap="round"/>
+        <line x1="122" y1="168" x2="128" y2="174" stroke="#ffffff30" stroke-width="2" stroke-linecap="round"/>
+        <line x1="127" y1="176" x2="133" y2="182" stroke="#ffffff30" stroke-width="2" stroke-linecap="round"/>
+        <line x1="132" y1="184" x2="138" y2="190" stroke="#ffffff30" stroke-width="2" stroke-linecap="round"/>
+
+        <!-- SQUASH BALL with impact lines -->
+        <circle cx="163" cy="52" r="18" fill="#00ff88" opacity=".92" filter="url(#glow)"/>
+        <circle cx="163" cy="52" r="12" fill="#00cc70"/>
+        <circle cx="159" cy="48" r="4" fill="#fff" opacity=".2"/>
+        <!-- impact / motion lines -->
+        <line x1="178" y1="38" x2="192" y2="28" stroke="#00ff88" stroke-width="2" stroke-linecap="round" opacity=".7"/>
+        <line x1="182" y1="45" x2="198" y2="40" stroke="#00ff88" stroke-width="1.5" stroke-linecap="round" opacity=".5"/>
+        <line x1="178" y1="55" x2="195" y2="55" stroke="#00ff88" stroke-width="1.5" stroke-linecap="round" opacity=".4"/>
+
+        <!-- speed streak behind ball -->
+        <line x1="148" y1="52" x2="125" y2="58" stroke="#00ff8850" stroke-width="3" stroke-linecap="round"/>
+        <line x1="147" y1="48" x2="130" y2="50" stroke="#00ff8830" stroke-width="2" stroke-linecap="round"/>
+        <line x1="147" y1="56" x2="132" y2="60" stroke="#00ff8820" stroke-width="1.5" stroke-linecap="round"/>
+
+        <!-- AI data dots (abstract tech feel) -->
+        <circle cx="30"  cy="180" r="2.5" fill="#00ff88" opacity=".4"/>
+        <circle cx="40"  cy="170" r="1.8" fill="#00c8ff" opacity=".35"/>
+        <circle cx="190" cy="90"  r="2"   fill="#7b2fff" opacity=".5"/>
+        <circle cx="180" cy="100" r="1.5" fill="#00ff88" opacity=".3"/>
+        <circle cx="45"  cy="50"  r="1.8" fill="#00c8ff" opacity=".3"/>
+      </svg>
+    </div>
+
+    <h1>SMARTSQUASH</h1>
+    <p class="tagline">
+      The AI-powered squash analysis app that tracks your shots, reads your performance,
+      and turns every match into a masterclass — right from your phone.
+    </p>
+
+    <div class="hero-reasoning">
+      <p>
+        Squash players have always been left behind when it comes to performance tech.
+        We built SmartSquash to change that — giving every player, at every level,
+        the same data-driven edge that elite athletes rely on.
+        No expensive equipment. No coaching staff. Just your phone, your game, and real answers.
+      </p>
+    </div>
+
+    <a class="download-btn" href="#download" style="font-size:.9rem; padding:18px 40px;">
+      &#9660;&nbsp; PRESS TO DOWNLOAD THE APP
+    </a>
+  </section>
+
+  <!-- ── FEATURES ── -->
+  <section class="features">
+    <h2>WHAT SMARTSQUASH DOES FOR YOU</h2>
+    <div class="cards">
+      <div class="card">
+        <div class="card-icon">🎯</div>
+        <h3>Shot Analysis</h3>
+        <p>Real-time AI detection of every shot type — drives, drops, boasts, and lobs — with instant accuracy scores.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">⚡</div>
+        <h3>Speed & Power Tracking</h3>
+        <p>Measure ball speed, swing power, and impact zones. Know exactly how hard you're hitting and where.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">📊</div>
+        <h3>Match Statistics</h3>
+        <p>Comprehensive match breakdowns: rally length, court coverage, error patterns, and winning shot percentages.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">🧠</div>
+        <h3>AI Coaching Tips</h3>
+        <p>Personalized coaching recommendations generated from your match data to help you improve faster.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">📈</div>
+        <h3>Progress Over Time</h3>
+        <p>Track your improvement across sessions with trend graphs, milestones, and skill rating progression.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">🏆</div>
+        <h3>Competitor Comparison</h3>
+        <p>Compare your stats against friends and players at your level. See where you lead and where to push harder.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── HOW IT WORKS ── -->
+  <section class="how">
+    <div class="how-inner">
+      <h2>HOW IT WORKS</h2>
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">01</div>
+          <div class="step-body">
+            <h3>DOWNLOAD THE APP</h3>
+            <p>Install SmartSquash on your iOS or Android device. Setup takes under 2 minutes.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">02</div>
+          <div class="step-body">
+            <h3>MOUNT YOUR PHONE</h3>
+            <p>Place your phone on a tripod or court mount with a clear view of the court. Our AI adapts to any angle.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">03</div>
+          <div class="step-body">
+            <h3>PLAY YOUR MATCH</h3>
+            <p>SmartSquash records and analyzes every rally in real time using on-device computer vision.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">04</div>
+          <div class="step-body">
+            <h3>REVIEW &amp; IMPROVE</h3>
+            <p>Get your full match report instantly after play. Watch highlights, read AI insights, and plan your training.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── REASONING / WHY ── -->
+  <section class="why">
+    <div class="why-inner">
+      <div class="why-badge">THE REASONING</div>
+      <h2>WHY WE BUILT SMARTSQUASH</h2>
+      <p class="why-lead">
+        Squash is one of the most demanding sports in the world — yet it's one of the least supported by modern technology.
+        Football, basketball, and tennis players have access to elite analytics systems worth millions.
+        Squash players get a scoreboard and their memory.
+      </p>
+      <div class="why-cards">
+        <div class="why-card">
+          <div class="why-num">01</div>
+          <h3>The Problem</h3>
+          <p>The average squash player has no way to objectively measure their performance. They rely entirely on feel, gut instinct, and the occasional advice from a hitting partner. Weaknesses go undetected. Good habits go unnoticed. Progress stalls — not from lack of effort, but lack of feedback.</p>
+        </div>
+        <div class="why-card">
+          <div class="why-num">02</div>
+          <h3>The Opportunity</h3>
+          <p>Modern AI can now analyze movement, track fast-moving objects, and generate actionable insights in real time — all from a single smartphone camera. The technology that once required a team of analysts and expensive hardware can now run in your pocket. We saw that and built SmartSquash.</p>
+        </div>
+        <div class="why-card">
+          <div class="why-num">03</div>
+          <h3>The Mission</h3>
+          <p>We believe every squash player — from club beginner to national competitor — deserves access to the same level of insight as elite athletes. SmartSquash exists to democratize performance analysis, close the gap between intention and execution, and help more people fall deeper in love with the sport.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── BENEFITS ── -->
+  <section class="benefits">
+    <div class="benefits-inner">
+      <h2>HOW SMARTSQUASH HELPS YOU</h2>
+      <p class="benefits-sub">Whether you're a beginner stepping onto the court for the first time or a competitive player chasing a ranking, SmartSquash gives you a real edge.</p>
+
+      <div class="benefit-row">
+        <div class="benefit-icon-wrap">
+          <svg width="72" height="72" viewBox="0 0 72 72"><circle cx="36" cy="36" r="34" fill="#00ff8812" stroke="#00ff8840" stroke-width="1.5"/><text x="50%" y="54%" dominant-baseline="middle" text-anchor="middle" font-size="32">🎓</text></svg>
+        </div>
+        <div class="benefit-text">
+          <h3>LEARN FASTER THAN EVER</h3>
+          <p>Most players repeat the same mistakes for years because they can't see them. SmartSquash shows you exactly where your technique breaks down — cross-court timing, drop shot depth, court positioning — so every session becomes a lesson, not just exercise. You don't need a coach watching every ball; the app does it for you.</p>
+        </div>
+      </div>
+
+      <div class="benefit-row reverse">
+        <div class="benefit-icon-wrap">
+          <svg width="72" height="72" viewBox="0 0 72 72"><circle cx="36" cy="36" r="34" fill="#00c8ff12" stroke="#00c8ff40" stroke-width="1.5"/><text x="50%" y="54%" dominant-baseline="middle" text-anchor="middle" font-size="32">💪</text></svg>
+        </div>
+        <div class="benefit-text">
+          <h3>TRAIN WITH A PURPOSE</h3>
+          <p>No more aimless drilling. SmartSquash identifies your weakest patterns — high error zones, overused shots, stamina drop-off points — and turns them into a focused training plan. You'll walk onto the court knowing exactly what to work on and why, making every minute of practice count.</p>
+        </div>
+      </div>
+
+      <div class="benefit-row">
+        <div class="benefit-icon-wrap">
+          <svg width="72" height="72" viewBox="0 0 72 72"><circle cx="36" cy="36" r="34" fill="#7b2fff12" stroke="#7b2fff40" stroke-width="1.5"/><text x="50%" y="54%" dominant-baseline="middle" text-anchor="middle" font-size="32">🏅</text></svg>
+        </div>
+        <div class="benefit-text">
+          <h3>WIN MORE MATCHES</h3>
+          <p>SmartSquash analyzes your opponent's tendencies just as much as yours. Discover that your rival always goes cross-court under pressure, or that your backhand return sets up unforced errors. Enter every match with a game plan built on real data, not guesswork — and finish it knowing exactly what made the difference.</p>
+        </div>
+      </div>
+
+      <div class="benefit-row reverse">
+        <div class="benefit-icon-wrap">
+          <svg width="72" height="72" viewBox="0 0 72 72"><circle cx="36" cy="36" r="34" fill="#00ff8812" stroke="#00ff8840" stroke-width="1.5"/><text x="50%" y="54%" dominant-baseline="middle" text-anchor="middle" font-size="32">🛡️</text></svg>
+        </div>
+        <div class="benefit-text">
+          <h3>PLAY SMARTER, STAY INJURY-FREE</h3>
+          <p>SmartSquash tracks movement load, swing mechanics, and effort spikes across sessions. It flags when you're overextending on your dominant side or pushing too hard in back-to-back matches — helping you avoid the overuse injuries that sideline players for weeks. Train hard and recover smarter.</p>
+        </div>
+      </div>
+
+      <div class="benefit-row">
+        <div class="benefit-icon-wrap">
+          <svg width="72" height="72" viewBox="0 0 72 72"><circle cx="36" cy="36" r="34" fill="#00c8ff12" stroke="#00c8ff40" stroke-width="1.5"/><text x="50%" y="54%" dominant-baseline="middle" text-anchor="middle" font-size="32">📱</text></svg>
+        </div>
+        <div class="benefit-text">
+          <h3>YOUR ENTIRE SQUASH CAREER IN ONE PLACE</h3>
+          <p>Every match, every drill, every milestone — stored, searchable, and visualized. Watch yourself improve over months. Share highlight clips with your coach or teammates. SmartSquash is the record your squash career deserves, and the motivation to keep pushing the next level.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── CTA ── -->
+  <section class="cta" id="download">
+    <h2>READY TO ELEVATE YOUR GAME?</h2>
+    <p>Join players who train smarter with SmartSquash.</p>
+    <a class="download-btn" href="#download" style="font-size:1rem; padding:20px 52px; display:inline-flex;">
+      &#9660;&nbsp; PRESS TO DOWNLOAD THE APP
+    </a>
+  </section>
+
+  <!-- ── APP STORE BADGES ── -->
+  <section class="app-stores">
+    <p class="as-label">AVAILABLE ON</p>
+    <div class="as-badges">
+      <a href="#download" class="as-badge">
+        <svg width="28" height="28" viewBox="0 0 28 28"><circle cx="14" cy="14" r="14" fill="#fff"/><text x="50%" y="55%" dominant-baseline="middle" text-anchor="middle" font-size="16">🍎</text></svg>
+        <div class="as-text">
+          <span class="as-sub">Download on the</span>
+          <span class="as-main">App Store</span>
+        </div>
+      </a>
+      <a href="#download" class="as-badge">
+        <svg width="28" height="28" viewBox="0 0 28 28"><circle cx="14" cy="14" r="14" fill="#fff"/><text x="50%" y="55%" dominant-baseline="middle" text-anchor="middle" font-size="16">▶</text></svg>
+        <div class="as-text">
+          <span class="as-sub">Get it on</span>
+          <span class="as-main">Google Play</span>
+        </div>
+      </a>
+    </div>
+  </section>
+
+  <!-- ── FOOTER ── -->
+  <footer>
+    &copy; 2026 <span>SmartSquash</span>. All rights reserved. &nbsp;|&nbsp; Built for players who want more than just a score.
+  </footer>
+
+  <script>
+    // Carousel auto-rotate every 8 seconds
+    const slides = document.querySelectorAll('.carousel-slide');
+    const dots   = document.querySelectorAll('.carousel-dot');
+    let current  = 0;
+    function goTo(n) {
+      slides[current].classList.remove('active');
+      dots[current].classList.remove('active');
+      current = (n + slides.length) % slides.length;
+      slides[current].classList.add('active');
+      dots[current].classList.add('active');
+    }
+    dots.forEach((dot, i) => dot.addEventListener('click', () => goTo(i)));
+    setInterval(() => goTo(current + 1), 8000);
+  </script>
+</body>
+</html>
