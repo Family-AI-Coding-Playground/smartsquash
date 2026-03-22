@@ -1422,8 +1422,8 @@
     const exampleMatch = document.querySelector('.example-match');
     const carousel     = document.querySelector('#mainCarousel');
     if (hero && exampleMatch && carousel) {
-      hero.after(exampleMatch);
-      exampleMatch.after(carousel);
+      hero.after(carousel);
+      carousel.after(exampleMatch);
     }
 
     // Carousel auto-rotate every 8 seconds
