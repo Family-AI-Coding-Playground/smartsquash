@@ -86,7 +86,7 @@
 
     /* ── CAROUSEL ── */
     .carousel {
-      width: 100%; height: 340px;
+      width: 100%; height: 50vh; min-height: 320px;
       position: relative; overflow: hidden;
       margin-top: 74px; /* push below fixed nav */
     }
@@ -96,7 +96,11 @@
       display: flex; align-items: center; justify-content: center;
     }
     .carousel-slide.active { opacity: 1; }
-    .carousel-slide svg { width: 100%; height: 340px; }
+    .carousel-slide img {
+      width: 100%; height: 100%;
+      object-fit: cover; object-position: center top;
+    }
+    .carousel-slide svg { width: 100%; height: 100%; }
 
     .carousel-dots {
       position: absolute; bottom: 12px; left: 50%; transform: translateX(-50%);
@@ -461,9 +465,16 @@
       .benefit-row, .benefit-row.reverse { flex-direction: column; }
     }
 
-    /* ── BELOW-HERO WRAPPER (example + carousel reordered by JS) ── */
-    section.hero + .example-match {
-      margin-top: 0;
+    /* ── MULTI-MATCH WRAPPER ── */
+    .matches-wrapper {
+      display: flex; flex-wrap: wrap; gap: 24px;
+      justify-content: center; align-items: flex-start;
+      padding: 40px 32px;
+      background: var(--dark);
+    }
+    .matches-wrapper .example-match {
+      margin: 0;
+      flex: 1 1 300px; max-width: 420px;
     }
 
     /* ── APP STORES ── */
@@ -552,7 +563,7 @@
 
     <!-- Slide 1: Real player photo – forehand lunge -->
     <div class="carousel-slide active" style="background:#030810;display:flex;align-items:center;justify-content:center;">
-      <img src="player1.webp" style="max-height:340px;max-width:100%;width:auto;height:340px;object-fit:contain;opacity:.92;"/>
+      <img src="player1.webp" style="width:100%;height:100%;object-fit:cover;object-position:center top;opacity:.92;"/>
       <div style="position:absolute;inset:0;background:linear-gradient(90deg,rgba(3,8,16,.7) 0%,transparent 40%,transparent 60%,rgba(3,8,16,.6) 100%);"></div>
       <div style="position:absolute;top:14px;left:50%;transform:translateX(-50%);background:rgba(0,255,136,.08);border:1px solid rgba(0,255,136,.25);border-radius:17px;padding:8px 28px;">
         <span style="font-family:'Orbitron',sans-serif;font-size:10px;color:#00ff88;letter-spacing:3px;">FOREHAND WINNER — GAME POINT</span>
@@ -699,7 +710,7 @@
 
     <!-- Slide 2: Ali Farag trophy photo -->
     <div class="carousel-slide" style="background:#080c14;display:flex;align-items:center;justify-content:center;">
-      <img src="player3.webp" style="max-height:340px;max-width:100%;width:auto;height:340px;object-fit:contain;"/>
+      <img src="player3.webp" style="width:100%;height:100%;object-fit:cover;object-position:center top;"/>
       <div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(8,12,20,.3) 0%,transparent 30%,transparent 70%,rgba(8,12,20,.5) 100%);pointer-events:none;"></div>
       <div style="position:absolute;top:14px;left:50%;transform:translateX(-50%);background:rgba(255,215,0,.1);border:1px solid rgba(255,215,0,.35);border-radius:17px;padding:8px 28px;white-space:nowrap;">
         <span style="font-family:'Orbitron',sans-serif;font-size:10px;color:#ffd700;letter-spacing:3px;">MATCH WIN — CHAMPIONSHIP MOMENT</span>
@@ -810,7 +821,7 @@
 
     <!-- Slide 3: Real player photo – backhand rally -->
     <div class="carousel-slide" style="background:#04080f;display:flex;align-items:center;justify-content:center;">
-      <img src="player2.webp" style="max-height:340px;max-width:100%;width:auto;height:340px;object-fit:contain;opacity:.92;"/>
+      <img src="player2.webp" style="width:100%;height:100%;object-fit:cover;object-position:center top;opacity:.92;"/>
       <div style="position:absolute;inset:0;background:linear-gradient(90deg,rgba(4,8,15,.65) 0%,transparent 35%,transparent 65%,rgba(4,8,15,.6) 100%);"></div>
       <div style="position:absolute;top:14px;left:50%;transform:translateX(-50%);background:rgba(0,200,255,.08);border:1px solid rgba(0,200,255,.25);border-radius:17px;padding:8px 28px;white-space:nowrap;">
         <span style="font-family:'Orbitron',sans-serif;font-size:10px;color:#00c8ff;letter-spacing:3px;">INTENSE RALLY — AI LIVE ANALYSIS</span>
@@ -934,7 +945,7 @@
 
     <!-- Slide 4: Paul Coll backhand photo -->
     <div class="carousel-slide" style="background:#06080f;display:flex;align-items:center;justify-content:center;">
-      <img src="player4.webp" style="max-height:340px;max-width:100%;width:auto;height:340px;object-fit:contain;"/>
+      <img src="player4.webp" style="width:100%;height:100%;object-fit:cover;object-position:center top;"/>
       <div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(6,8,15,.3) 0%,transparent 30%,transparent 70%,rgba(6,8,15,.5) 100%);pointer-events:none;"></div>
       <div style="position:absolute;top:14px;left:50%;transform:translateX(-50%);background:rgba(0,200,255,.08);border:1px solid rgba(0,200,255,.25);border-radius:17px;padding:8px 28px;white-space:nowrap;">
         <span style="font-family:'Orbitron',sans-serif;font-size:10px;color:#00c8ff;letter-spacing:3px;">BACKHAND DRIVE — RALLY MODE</span>
@@ -1058,7 +1069,8 @@
     <div class="orb orb1"></div>
     <div class="orb orb2"></div>
 
-    <!-- EXAMPLE MATCH -->
+    <!-- EXAMPLE MATCHES -->
+    <div class="matches-wrapper">
     <div class="example-match">
       <div class="em-badge">LIVE EXAMPLE MATCH</div>
       <div class="em-scoreboard">
@@ -1107,6 +1119,108 @@
       </div>
       <p class="em-note">&#128337; Game 1 of 5 &nbsp;|&nbsp; SmartSquash AI Analysis</p>
     </div>
+
+    <!-- EXAMPLE MATCH 2 -->
+    <div class="example-match">
+      <div class="em-badge">LIVE EXAMPLE MATCH</div>
+      <div class="em-scoreboard">
+        <div class="em-player">
+          <span class="em-name">ELSHORBAGY</span>
+          <span class="em-score">3</span>
+        </div>
+        <div class="em-divider">VS</div>
+        <div class="em-player">
+          <span class="em-name">GAWAD</span>
+          <span class="em-score">1</span>
+        </div>
+      </div>
+      <div class="em-stats">
+        <div class="em-stat">
+          <span class="em-stat-val">91<span style="font-size:.7em">km/h</span></span>
+          <span class="em-stat-label">Avg Ball Speed</span>
+        </div>
+        <div class="em-stat">
+          <span class="em-stat-val">58</span>
+          <span class="em-stat-label">Total Shots</span>
+        </div>
+        <div class="em-stat">
+          <span class="em-stat-val">89<span style="font-size:.7em">%</span></span>
+          <span class="em-stat-label">Shot Accuracy</span>
+        </div>
+        <div class="em-stat">
+          <span class="em-stat-val">11</span>
+          <span class="em-stat-label">Rallies</span>
+        </div>
+      </div>
+      <div class="em-shot-bar">
+        <span class="em-bar-label">DRIVES</span>
+        <div class="em-bar-track"><div class="em-bar-fill" style="width:65%;background:linear-gradient(90deg,#00ff88,#00c8ff)"></div></div>
+        <span class="em-bar-pct">65%</span>
+      </div>
+      <div class="em-shot-bar">
+        <span class="em-bar-label">DROPS</span>
+        <div class="em-bar-track"><div class="em-bar-fill" style="width:22%;background:linear-gradient(90deg,#7b2fff,#00c8ff)"></div></div>
+        <span class="em-bar-pct">22%</span>
+      </div>
+      <div class="em-shot-bar">
+        <span class="em-bar-label">BOASTS</span>
+        <div class="em-bar-track"><div class="em-bar-fill" style="width:13%;background:linear-gradient(90deg,#ff4488,#7b2fff)"></div></div>
+        <span class="em-bar-pct">13%</span>
+      </div>
+      <p class="em-note">&#128337; Game 3 of 5 &nbsp;|&nbsp; SmartSquash AI Analysis</p>
+    </div>
+
+    <!-- EXAMPLE MATCH 3 -->
+    <div class="example-match">
+      <div class="em-badge">LIVE EXAMPLE MATCH</div>
+      <div class="em-scoreboard">
+        <div class="em-player">
+          <span class="em-name">MATTHEW</span>
+          <span class="em-score">2</span>
+        </div>
+        <div class="em-divider">VS</div>
+        <div class="em-player">
+          <span class="em-name">WILLSTROP</span>
+          <span class="em-score">3</span>
+        </div>
+      </div>
+      <div class="em-stats">
+        <div class="em-stat">
+          <span class="em-stat-val">78<span style="font-size:.7em">km/h</span></span>
+          <span class="em-stat-label">Avg Ball Speed</span>
+        </div>
+        <div class="em-stat">
+          <span class="em-stat-val">74</span>
+          <span class="em-stat-label">Total Shots</span>
+        </div>
+        <div class="em-stat">
+          <span class="em-stat-val">91<span style="font-size:.7em">%</span></span>
+          <span class="em-stat-label">Shot Accuracy</span>
+        </div>
+        <div class="em-stat">
+          <span class="em-stat-val">15</span>
+          <span class="em-stat-label">Rallies</span>
+        </div>
+      </div>
+      <div class="em-shot-bar">
+        <span class="em-bar-label">DRIVES</span>
+        <div class="em-bar-track"><div class="em-bar-fill" style="width:55%;background:linear-gradient(90deg,#00ff88,#00c8ff)"></div></div>
+        <span class="em-bar-pct">55%</span>
+      </div>
+      <div class="em-shot-bar">
+        <span class="em-bar-label">DROPS</span>
+        <div class="em-bar-track"><div class="em-bar-fill" style="width:30%;background:linear-gradient(90deg,#7b2fff,#00c8ff)"></div></div>
+        <span class="em-bar-pct">30%</span>
+      </div>
+      <div class="em-shot-bar">
+        <span class="em-bar-label">BOASTS</span>
+        <div class="em-bar-track"><div class="em-bar-fill" style="width:15%;background:linear-gradient(90deg,#ff4488,#7b2fff)"></div></div>
+        <span class="em-bar-pct">15%</span>
+      </div>
+      <p class="em-note">&#128337; Game 5 of 5 &nbsp;|&nbsp; SmartSquash AI Analysis</p>
+    </div>
+
+    </div><!-- end .matches-wrapper -->
 
     <!-- LOGO SVG -->
     <div class="logo-wrap">
@@ -1418,14 +1532,11 @@
   </footer>
 
   <script>
-    // ── Reorder: move carousel & example-match to after the HOW IT WORKS steps ──
-    const howSection   = document.querySelector('section.how');
-    const exampleMatch = document.querySelector('.example-match');
-    const carousel     = document.querySelector('#mainCarousel');
-    if (howSection && exampleMatch && carousel) {
-      howSection.after(carousel);
-      carousel.after(exampleMatch);
-    }
+    // ── Reorder: matches-wrapper pulled out of hero and placed after HOW IT WORKS ──
+    // (carousel is already before hero in HTML — no need to move it)
+    const howSection      = document.querySelector('section.how');
+    const matchesWrapper  = document.querySelector('.matches-wrapper');
+    if (howSection && matchesWrapper) howSection.after(matchesWrapper);
 
     // Carousel auto-rotate every 8 seconds
     const slides = document.querySelectorAll('.carousel-slide');
