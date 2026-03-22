@@ -1418,12 +1418,12 @@
   </footer>
 
   <script>
-    // ── Reorder: move example-match & carousel to below the hero ──
-    const hero         = document.querySelector('section.hero');
+    // ── Reorder: move carousel & example-match to after the HOW IT WORKS steps ──
+    const howSection   = document.querySelector('section.how');
     const exampleMatch = document.querySelector('.example-match');
     const carousel     = document.querySelector('#mainCarousel');
-    if (hero && exampleMatch && carousel) {
-      hero.after(carousel);
+    if (howSection && exampleMatch && carousel) {
+      howSection.after(carousel);
       carousel.after(exampleMatch);
     }
 
