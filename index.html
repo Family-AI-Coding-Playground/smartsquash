@@ -460,6 +460,11 @@
       .benefit-row, .benefit-row.reverse { flex-direction: column; }
     }
 
+    /* ── BELOW-HERO WRAPPER (example + carousel reordered by JS) ── */
+    section.hero + .example-match {
+      margin-top: 0;
+    }
+
     /* ── APP STORES ── */
     section.app-stores {
       padding: 48px 24px;
@@ -1412,6 +1417,15 @@
   </footer>
 
   <script>
+    // ── Reorder: move example-match & carousel to below the hero ──
+    const hero         = document.querySelector('section.hero');
+    const exampleMatch = document.querySelector('.example-match');
+    const carousel     = document.querySelector('#mainCarousel');
+    if (hero && exampleMatch && carousel) {
+      hero.after(exampleMatch);
+      exampleMatch.after(carousel);
+    }
+
     // Carousel auto-rotate every 8 seconds
     const slides = document.querySelectorAll('.carousel-slide');
     const dots   = document.querySelectorAll('.carousel-dot');
