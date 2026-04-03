@@ -107,10 +107,17 @@
       display: flex; gap: 8px; z-index: 10;
     }
     .carousel-dot {
-      width: 8px; height: 8px; border-radius: 50%;
-      background: rgba(255,255,255,.25); transition: background .4s;
+      width: 12px; height: 12px; border-radius: 50%;
+      background: rgba(255,255,255,.35);
+      box-shadow: 0 2px 8px rgba(0,0,0,.6);
+      transition: background .4s, transform .3s;
+      cursor: pointer;
     }
-    .carousel-dot.active { background: #00ff88; }
+    .carousel-dot.active {
+      background: #00ff88;
+      box-shadow: 0 0 10px rgba(0,255,136,.7), 0 2px 8px rgba(0,0,0,.5);
+      transform: scale(1.3);
+    }
 
     .slide-caption {
       position: absolute; bottom: 36px; left: 50%; transform: translateX(-50%);
@@ -865,6 +872,43 @@
     </a>
   </section>
 
+  <!-- ── STATS BAR ── -->
+  <div style="background:rgba(0,255,136,.06);border-top:1px solid rgba(0,255,136,.15);border-bottom:1px solid rgba(0,255,136,.15);padding:22px 24px;">
+    <div style="max-width:900px;margin:0 auto;display:flex;flex-wrap:wrap;justify-content:center;gap:32px;text-align:center;">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <span style="font-size:1.4rem;">📊</span>
+        <div>
+          <div style="font-family:'Orbitron',sans-serif;font-size:1.1rem;font-weight:900;color:#00ff88;">10,000+</div>
+          <div style="font-size:.72rem;color:#8a9ab5;letter-spacing:1px;">MATCHES ANALYZED</div>
+        </div>
+      </div>
+      <div style="width:1px;background:rgba(0,255,136,.2);align-self:stretch;"></div>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <span style="font-size:1.4rem;">🎯</span>
+        <div>
+          <div style="font-family:'Orbitron',sans-serif;font-size:1.1rem;font-weight:900;color:#00ff88;">94%</div>
+          <div style="font-size:.72rem;color:#8a9ab5;letter-spacing:1px;">SHOT ACCURACY DETECTION</div>
+        </div>
+      </div>
+      <div style="width:1px;background:rgba(0,255,136,.2);align-self:stretch;"></div>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <span style="font-size:1.4rem;">⚡</span>
+        <div>
+          <div style="font-family:'Orbitron',sans-serif;font-size:1.1rem;font-weight:900;color:#00ff88;">REAL-TIME</div>
+          <div style="font-size:.72rem;color:#8a9ab5;letter-spacing:1px;">AI FEEDBACK</div>
+        </div>
+      </div>
+      <div style="width:1px;background:rgba(0,255,136,.2);align-self:stretch;"></div>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <span style="font-size:1.4rem;">📱</span>
+        <div>
+          <div style="font-family:'Orbitron',sans-serif;font-size:1.1rem;font-weight:900;color:#00ff88;">iOS & ANDROID</div>
+          <div style="font-size:.72rem;color:#8a9ab5;letter-spacing:1px;">ALL DEVICES</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- ── FEATURES ── -->
   <section class="features">
     <h2>WHAT SMARTSQUASH DOES FOR YOU</h2>
@@ -1032,7 +1076,7 @@
     <h2>READY TO ELEVATE YOUR GAME?</h2>
     <p>Join players who train smarter with SmartSquash.</p>
     <a class="download-btn" href="#download" style="font-size:1rem; padding:20px 52px; display:inline-flex;">
-      &#9660;&nbsp; PRESS TO DOWNLOAD THE APP
+      &#9660;&nbsp; READY TO START? DOWNLOAD NOW
     </a>
   </section>
 
@@ -1041,14 +1085,23 @@
     <p class="as-label">AVAILABLE ON</p>
     <div class="as-badges">
       <a href="#download" class="as-badge">
-        <svg width="28" height="28" viewBox="0 0 28 28"><circle cx="14" cy="14" r="14" fill="#fff"/><text x="50%" y="55%" dominant-baseline="middle" text-anchor="middle" font-size="16">🍎</text></svg>
+        <!-- Apple logo SVG -->
+        <svg width="28" height="34" viewBox="0 0 814 1000" fill="#ffffff" xmlns="http://www.w3.org/2000/svg">
+          <path d="M788.1 340.9c-5.8 4.5-108.2 62.2-108.2 190.5 0 148.4 130.3 200.9 134.2 202.2-.6 3.2-20.7 71.9-68.7 141.9-42.8 61.6-87.5 123.1-155.5 123.1s-85.5-39.5-164-39.5c-76 0-103.7 40.8-165.9 40.8s-105-38.8-168.3-119.3C67.7 768.6 26.1 656.7 26.1 548.9c0-218.3 141.5-333.5 280.6-333.5 74.2 0 136.2 48.8 182.9 48.8 44.6 0 115.5-52.5 199-52.5zm-234.7-193.6c37.2-44.2 63.5-105.5 63.5-166.8 0-8.3-.6-16.7-2-24.4-60.6 2.3-132.3 40.3-176.1 91.4-33.5 37.5-65.6 98.8-65.6 161.1 0 9 1.4 18 2 20.9 3.5.6 9 1.4 14.5 1.4 54.3 0 121.5-36.2 163.7-83.6z"/>
+        </svg>
         <div class="as-text">
           <span class="as-sub">Download on the</span>
           <span class="as-main">App Store</span>
         </div>
       </a>
       <a href="#download" class="as-badge">
-        <svg width="28" height="28" viewBox="0 0 28 28"><circle cx="14" cy="14" r="14" fill="#fff"/><text x="50%" y="55%" dominant-baseline="middle" text-anchor="middle" font-size="16">▶</text></svg>
+        <!-- Google Play logo SVG -->
+        <svg width="28" height="30" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+          <path fill="#00C75A" d="M26 0C12 7 2 22 2 40v432c0 18 10 33 24 40l239-236z"/>
+          <path fill="#FFDA00" d="M346 173l-67-37L2 472c8 9 20 14 33 14 8 0 16-2 23-6l288-307z"/>
+          <path fill="#FF3D00" d="M452 219c-13-8-61-34-106-59l-67 63 73 72 100-55c18-11 18-13 0-21z"/>
+          <path fill="#00A1FF" d="M26 0l239 236 67-67L55 6C48 2 37 0 26 0z"/>
+        </svg>
         <div class="as-text">
           <span class="as-sub">Get it on</span>
           <span class="as-main">Google Play</span>
