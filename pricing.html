@@ -135,6 +135,83 @@
       position: relative; z-index: 1;
     }
     .savings-note span { color: #00ff88; }
+
+    /* ── FREE TRIAL BANNER ── */
+    .free-trial-banner {
+      display: flex; align-items: center; justify-content: center; gap: 18px;
+      flex-wrap: wrap;
+      background: linear-gradient(135deg, rgba(0,255,136,.12), rgba(0,200,255,.08));
+      border: 1.5px solid rgba(0,255,136,.45);
+      border-radius: 20px; padding: 22px 36px;
+      max-width: 700px; width: 100%;
+      margin-bottom: 56px;
+      position: relative; z-index: 1;
+      box-shadow: 0 0 40px rgba(0,255,136,.15);
+    }
+    .trial-badge {
+      background: linear-gradient(135deg,#00ff88,#00c8ff);
+      color: #080c14; font-family: 'Orbitron', sans-serif;
+      font-size: .65rem; font-weight: 900; letter-spacing: 2px;
+      padding: 6px 16px; border-radius: 50px;
+      white-space: nowrap;
+    }
+    .trial-text { flex: 1; min-width: 200px; }
+    .trial-text strong {
+      display: block; font-family: 'Orbitron', sans-serif;
+      font-size: 1.1rem; color: #fff; margin-bottom: 4px;
+    }
+    .trial-text span { font-size: .88rem; color: #8a9ab5; }
+    .trial-btn {
+      display: inline-block; white-space: nowrap;
+      background: linear-gradient(135deg,#00ff88,#00c8ff);
+      color: #080c14; font-family: 'Orbitron', sans-serif;
+      font-weight: 700; font-size: .72rem; letter-spacing: 1.5px;
+      padding: 12px 26px; border-radius: 50px; text-decoration: none;
+      transition: transform .2s, box-shadow .2s;
+    }
+    .trial-btn:hover { transform: scale(1.05); box-shadow: 0 0 25px rgba(0,255,136,.5); }
+
+    /* ── BUNDLES SECTION ── */
+    .bundles-section {
+      margin-top: 72px; width: 100%; max-width: 900px;
+      position: relative; z-index: 1;
+    }
+    .bundles-title {
+      font-family: 'Orbitron', sans-serif; font-size: 1rem; letter-spacing: 3px;
+      color: #00c8ff; text-align: center; margin-bottom: 8px;
+    }
+    .bundles-sub {
+      text-align: center; color: #556; font-size: .88rem; margin-bottom: 36px;
+    }
+    .bundles-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+      gap: 18px;
+    }
+    .bundle-card {
+      background: var(--card);
+      border: 1px solid rgba(0,200,255,.2);
+      border-radius: 18px; padding: 28px 20px;
+      text-align: center; position: relative; overflow: hidden;
+      transition: transform .25s, box-shadow .25s;
+    }
+    .bundle-card:hover { transform: translateY(-6px); box-shadow: 0 16px 40px rgba(0,200,255,.15); }
+    .bundle-matches {
+      font-family: 'Orbitron', sans-serif; font-size: 1.9rem; font-weight: 900;
+      background: linear-gradient(135deg,#00c8ff,#7b2fff);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      line-height: 1; margin-bottom: 4px;
+    }
+    .bundle-label { font-size: .75rem; color: #556; letter-spacing: 1px; margin-bottom: 14px; }
+    .bundle-free {
+      display: inline-block;
+      background: linear-gradient(135deg,#00ff88,#00c8ff);
+      color: #080c14; font-family: 'Orbitron', sans-serif;
+      font-size: .65rem; font-weight: 900; letter-spacing: 1.5px;
+      padding: 5px 14px; border-radius: 50px; margin-bottom: 10px;
+    }
+    .bundle-total { font-size: .8rem; color: #8a9ab5; }
+    .bundle-total strong { color: #00ff88; }
   </style>
 </head>
 <body>
@@ -156,6 +233,7 @@
     </a>
     <div class="nav-right">
       <a class="nav-link" href="pricing.html">Price</a>
+      <a class="nav-link" href="why.html">Why We Made This</a>
       <a class="nav-link" href="about.html">About Us</a>
       <a class="nav-link" href="contact.html">Contact Info</a>
       <a class="download-btn" href="index.html#download">&#9660; DOWNLOAD THE APP</a>
@@ -166,6 +244,16 @@
     <div class="page-badge">PRICING</div>
     <h1>SIMPLE, HONEST PRICING</h1>
     <p class="sub">Pay only for what you play. No subscriptions, no hidden fees — just pure match analysis.</p>
+
+    <!-- ── FREE TRIAL BANNER ── -->
+    <div class="free-trial-banner">
+      <div class="trial-badge">🎁 FREE TRIAL</div>
+      <div class="trial-text">
+        <strong>Start with 3 matches — completely free</strong>
+        <span>No credit card required. Full AI analysis on every match. Cancel anytime.</span>
+      </div>
+      <a class="trial-btn" href="index.html#download">CLAIM FREE TRIAL</a>
+    </div>
 
     <div class="pricing-grid">
 
@@ -210,7 +298,44 @@
 
     </div>
 
-    <p class="savings-note">All plans include full AI analysis, shot tracking, match reports &amp; progress history.<br/>Questions? <span><a href="contact.html" style="color:#00ff88;text-decoration:none;">Contact us</a></span> anytime.</p>
+    <!-- ── BUNDLES SECTION ── -->
+    <div class="bundles-section">
+      <div class="bundles-title">MATCH BUNDLE BONUSES</div>
+      <p class="bundles-sub">Buy more matches, get free ones automatically added to your account.</p>
+      <div class="bundles-grid">
+
+        <div class="bundle-card">
+          <div class="bundle-matches">10</div>
+          <div class="bundle-label">MATCHES PURCHASED</div>
+          <div class="bundle-free">+ 1 FREE</div>
+          <div class="bundle-total">Play <strong>11 matches</strong> total</div>
+        </div>
+
+        <div class="bundle-card">
+          <div class="bundle-matches">20</div>
+          <div class="bundle-label">MATCHES PURCHASED</div>
+          <div class="bundle-free">+ 3 FREE</div>
+          <div class="bundle-total">Play <strong>23 matches</strong> total</div>
+        </div>
+
+        <div class="bundle-card">
+          <div class="bundle-matches">30</div>
+          <div class="bundle-label">MATCHES PURCHASED</div>
+          <div class="bundle-free">+ 4 FREE</div>
+          <div class="bundle-total">Play <strong>34 matches</strong> total</div>
+        </div>
+
+        <div class="bundle-card">
+          <div class="bundle-matches">50</div>
+          <div class="bundle-label">MATCHES PURCHASED</div>
+          <div class="bundle-free">+ 5 FREE</div>
+          <div class="bundle-total">Play <strong>55 matches</strong> total</div>
+        </div>
+
+      </div>
+    </div>
+
+    <p class="savings-note" style="margin-top:40px;">All plans include full AI analysis, shot tracking, match reports &amp; progress history.<br/>Questions? <span><a href="contact.html" style="color:#00ff88;text-decoration:none;">Contact us</a></span> anytime.</p>
   </div>
 </body>
 </html>
